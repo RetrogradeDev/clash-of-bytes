@@ -7,12 +7,12 @@ type PuzzleWithDetails = {
 	description: string;
 	createdAt: Date;
 	author: {
-		username: string;
+		name: string;
 	};
 	solutions: Array<{
 		charCount: number;
 		user: {
-			username: string;
+			name: string;
 		};
 	}>;
 	votes: Array<{ id: string }>;
@@ -52,7 +52,7 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 				</div>
 
 				<div className="flex items-center justify-between text-sm text-white/60">
-					<span>by @{puzzle.author.username}</span>
+					<span>by @{puzzle.author.name}</span>
 					<span>
 						{formatDistanceToNow(puzzle.createdAt, { addSuffix: true })}
 					</span>
@@ -83,8 +83,7 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 									/>
 								</svg>
 								<span>
-									{bestSolution.charCount} chars by @
-									{bestSolution.user.username}
+									{bestSolution.charCount} chars by @{bestSolution.user.name}
 								</span>
 							</span>
 						)}

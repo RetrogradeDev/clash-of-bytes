@@ -18,7 +18,7 @@ async function getFeaturedPuzzle() {
 					charCount: true,
 					user: {
 						select: {
-							username: true,
+							name: true,
 						},
 					},
 				},
@@ -50,7 +50,7 @@ async function getFeaturedPuzzle() {
 						charCount: true,
 						user: {
 							select: {
-								username: true,
+								name: true,
 							},
 						},
 					},
@@ -91,7 +91,7 @@ async function getRecentPuzzles() {
 					charCount: true,
 					user: {
 						select: {
-							username: true,
+							name: true,
 						},
 					},
 				},

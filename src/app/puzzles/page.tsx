@@ -24,7 +24,7 @@ async function getPuzzles(searchTerm?: string) {
 					charCount: true,
 					user: {
 						select: {
-							username: true,
+							name: true,
 						},
 					},
 				},

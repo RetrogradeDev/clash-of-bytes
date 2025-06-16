@@ -44,10 +44,10 @@ export function Navbar() {
 						) : session ? (
 							<div className="flex items-center space-x-4">
 								<Link
-									href="/profile"
+									href={`/profile/${session.user.name}`}
 									className="text-white/80 hover:text-white transition-colors"
 								>
-									@{session.user.email?.split("@")[0]}
+									@{session.user.name}
 								</Link>
 								<button
 									onClick={() => signOut()}

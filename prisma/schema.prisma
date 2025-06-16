@@ -11,18 +11,22 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  name        String   @unique
-  email       String   @unique
-  password    String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  email     String   @unique
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Relations
-  puzzles     Puzzle[]
-  solutions   Solution[]
-  votes       Vote[]
-  sessions    Session[]
+  puzzles   Puzzle[]
+  solutions Solution[]
+  votes     Vote[]
+  sessions  Session[]
+
+  emailVerified Boolean
+  image         String?
+  accounts      Account[]
 
   @@map("users")
 }
@@ -34,25 +38,32 @@ model Session {
 
   user User @relation(references: [id], fields: [userId], onDelete: Cascade)
 
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+
   @@map("sessions")
+  @@unique([token])
 }
 
 model Puzzle {
-  id            String    @id @default(cuid())
-  title         String
-  description   String    // Markdown
-  inputFormat   String
-  outputFormat  String
-  testCases     Json      // Array of {input: string, output: string}
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  featuredDate  DateTime?
-  authorId      String
+  id           String    @id @default(cuid())
+  title        String
+  description  String // Markdown
+  inputFormat  String
+  outputFormat String
+  testCases    Json // Array of {input: string, output: string}
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  featuredDate DateTime?
+  authorId     String
 
   // Relations
-  author        User       @relation(references: [id], fields: [authorId], onDelete: Cascade)
-  solutions     Solution[]
-  votes         Vote[]
+  author    User       @relation(references: [id], fields: [authorId], onDelete: Cascade)
+  solutions Solution[]
+  votes     Vote[]
 
   @@map("puzzles")
 }
@@ -60,15 +71,15 @@ model Puzzle {
 model Solution {
   id        String   @id @default(cuid())
   code      String
-  language  String   // 'javascript' or 'python'
+  language  String // 'javascript' or 'python'
   charCount Int
   createdAt DateTime @default(now())
   puzzleId  String
   userId    String
 
   // Relations
-  puzzle    Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
-  user      User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+  puzzle Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
+  user   User   @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@unique([puzzleId, userId])
   @@map("solutions")
@@ -80,9 +91,39 @@ model Vote {
   userId   String
 
   // Relations
-  puzzle   Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
-  user     User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+  puzzle Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
+  user   User   @relation(references: [id], fields: [userId], onDelete: Cascade)
 
   @@unique([puzzleId, userId])
   @@map("votes")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
