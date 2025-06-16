@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  email       String   @unique
+  password    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  puzzles     Puzzle[]
+  solutions   Solution[]
+  votes       Vote[]
+  sessions    Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  expiresAt DateTime
+
+  user User @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Puzzle {
+  id            String    @id @default(cuid())
+  title         String
+  description   String    // Markdown
+  inputFormat   String
+  outputFormat  String
+  testCases     Json      // Array of {input: string, output: string}
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  featuredDate  DateTime?
+  authorId      String
+
+  // Relations
+  author        User       @relation(references: [id], fields: [authorId], onDelete: Cascade)
+  solutions     Solution[]
+  votes         Vote[]
+
+  @@map("puzzles")
+}
+
+model Solution {
+  id        String   @id @default(cuid())
+  code      String
+  language  String   // 'javascript' or 'python'
+  charCount Int
+  createdAt DateTime @default(now())
+  puzzleId  String
+  userId    String
+
+  // Relations
+  puzzle    Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
+  user      User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@unique([puzzleId, userId])
+  @@map("solutions")
+}
+
+model Vote {
+  id       String @id @default(cuid())
+  puzzleId String
+  userId   String
+
+  // Relations
+  puzzle   Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
+  user     User   @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@unique([puzzleId, userId])
+  @@map("votes")
+}

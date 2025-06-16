@@ -1,103 +1,182 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
+import { PuzzleCard } from "@/components/puzzle-card";
 
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+async function getFeaturedPuzzle() {
+	const today = new Date();
+	today.setHours(0, 0, 0, 0);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	// First try to get today's featured puzzle
+	let featuredPuzzle = await prisma.puzzle.findFirst({
+		where: {
+			featuredDate: today,
+		},
+		include: {
+			author: true,
+			solutions: {
+				select: {
+					charCount: true,
+					user: {
+						select: {
+							username: true,
+						},
+					},
+				},
+				orderBy: {
+					charCount: "asc",
+				},
+				take: 1,
+			},
+			votes: true,
+		},
+	});
+
+	// If no featured puzzle for today, pick the highest voted from the past 3 days
+	if (!featuredPuzzle) {
+		const threeDaysAgo = new Date();
+		threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+
+		const candidatePuzzles = await prisma.puzzle.findMany({
+			where: {
+				createdAt: {
+					gte: threeDaysAgo,
+				},
+				featuredDate: null,
+			},
+			include: {
+				author: true,
+				solutions: {
+					select: {
+						charCount: true,
+						user: {
+							select: {
+								username: true,
+							},
+						},
+					},
+					orderBy: {
+						charCount: "asc",
+					},
+					take: 1,
+				},
+				votes: true,
+			},
+			orderBy: {
+				votes: {
+					_count: "desc",
+				},
+			},
+			take: 1,
+		});
+
+		if (candidatePuzzles.length > 0) {
+			featuredPuzzle = candidatePuzzles[0];
+			// Set as today's featured puzzle
+			await prisma.puzzle.update({
+				where: { id: featuredPuzzle.id },
+				data: { featuredDate: today },
+			});
+		}
+	}
+
+	return featuredPuzzle;
+}
+
+async function getRecentPuzzles() {
+	return await prisma.puzzle.findMany({
+		include: {
+			author: true,
+			solutions: {
+				select: {
+					charCount: true,
+					user: {
+						select: {
+							username: true,
+						},
+					},
+				},
+				orderBy: {
+					charCount: "asc",
+				},
+				take: 1,
+			},
+			votes: true,
+		},
+		orderBy: {
+			createdAt: "desc",
+		},
+		take: 6,
+	});
+}
+
+export default async function Home() {
+	const [featuredPuzzle, recentPuzzles] = await Promise.all([
+		getFeaturedPuzzle(),
+		getRecentPuzzles(),
+	]);
+
+	return (
+		<div className="space-y-12">
+			{/* Hero Section */}
+			<div className="text-center space-y-6">
+				<h1 className="text-5xl font-bold text-white">⚡ Clash of Bytes</h1>
+				<p className="text-xl text-white/80 max-w-2xl mx-auto">
+					The ultimate code golf platform. Solve programming puzzles in as few
+					characters as possible and compete with developers worldwide.
+				</p>
+				<div className="flex justify-center space-x-4">
+					<Link
+						href="/puzzles"
+						className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+					>
+						Browse Puzzles
+					</Link>
+					<Link
+						href="/submit"
+						className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/20"
+					>
+						Submit a Puzzle
+					</Link>
+				</div>
+			</div>
+
+			{/* Featured Puzzle */}
+			{featuredPuzzle && (
+				<section className="space-y-6">
+					<div className="text-center">
+						<h2 className="text-3xl font-bold text-white mb-2">
+							🌟 Today's Featured Puzzle
+						</h2>
+						<p className="text-white/60">The community's favorite challenge</p>
+					</div>
+					<div className="max-w-2xl mx-auto">
+						<PuzzleCard puzzle={featuredPuzzle} featured />
+					</div>
+				</section>
+			)}
+
+			{/* Recent Puzzles */}
+			<section className="space-y-6">
+				<div className="text-center">
+					<h2 className="text-3xl font-bold text-white mb-2">
+						🆕 Recent Puzzles
+					</h2>
+					<p className="text-white/60">Fresh challenges from the community</p>
+				</div>
+				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{recentPuzzles.map((puzzle) => (
+						<PuzzleCard key={puzzle.id} puzzle={puzzle} />
+					))}
+				</div>
+				<div className="text-center">
+					<Link
+						href="/puzzles"
+						className="text-purple-400 hover:text-purple-300 font-semibold"
+					>
+						View all puzzles →
+					</Link>
+				</div>
+			</section>
+		</div>
+	);
 }
