@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PuzzleCard } from "@/components/puzzle-card";
 
-async function getFeaturedPuzzle() {
+async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
 
@@ -82,7 +82,7 @@ async function getFeaturedPuzzle() {
 	return featuredPuzzle;
 }
 
-async function getRecentPuzzles() {
+async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 	return await prisma.puzzle.findMany({
 		include: {
 			author: true,
