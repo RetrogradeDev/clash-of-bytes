@@ -1,0 +1,3 @@
+- [ ] Fix dropdown colors
+- [ ] Handle exec errors and stdout
+- [ ] fix edit bounds

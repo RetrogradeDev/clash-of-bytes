@@ -1,0 +1,379 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
+import { createPuzzle } from "@/lib/actions";
+import { TypedFunctionInput } from "@/components/typed-input";
+
+const puzzleTitleMaxLength = 100;
+const puzzleDescriptionMaxLength = 1000;
+const inputOutputFormats: InputOutputFormat[] = [
+	"string",
+	"number",
+	"boolean",
+	"string[]",
+	"number[]",
+	"boolean[]",
+];
+
+interface TestCase {
+	input: string;
+	output: string;
+}
+
+export default function SubmitPuzzlePage() {
+	const { data: session } = useSession();
+	const router = useRouter();
+
+	const [title, setTitle] = useState("");
+	const [description, setDescription] = useState("");
+	const [inputFormat, setInputFormat] = useState<InputOutputFormat>("string");
+	const [outputFormat, setOutputFormat] = useState<InputOutputFormat>("string");
+	const [inputDescription, setInputDescription] = useState("");
+	const [outputDescription, setOutputDescription] = useState("");
+	const [testCases, setTestCases] = useState<TestCase[]>([
+		{ input: "", output: "" },
+	]);
+	const [isLoading, setIsLoading] = useState(false);
+	const [error, setError] = useState("");
+
+	// For some reason this is needed
+	let redirectId: number | null = null;
+
+	// Redirect if not authenticated
+	useEffect(() => {
+		if (!session) {
+			redirectId = setTimeout(() => {
+				router.push("/auth/signin?redirect=/submit");
+			}, 500) as unknown as number;
+		} else {
+			// Clear redirect if session is available
+			if (redirectId) {
+				clearTimeout(redirectId);
+				redirectId = null;
+			}
+		}
+	}, [session, router]);
+
+	if (!session) {
+		return null;
+	}
+
+	const addTestCase = () => {
+		setTestCases([...testCases, { input: "", output: "" }]);
+	};
+
+	const removeTestCase = (index: number) => {
+		if (testCases.length > 1) {
+			setTestCases(testCases.filter((_, i) => i !== index));
+		}
+	};
+
+	const updateTestCase = (
+		index: number,
+		field: keyof TestCase,
+		value: string,
+	) => {
+		const updated = testCases.map((testCase, i) =>
+			i === index ? { ...testCase, [field]: value } : testCase,
+		);
+		setTestCases(updated);
+	};
+
+	const validateForm = () => {
+		if (!title.trim()) return "Title is required";
+		if (!description.trim()) return "Description is required";
+		if (!inputFormat.trim()) return "Input format is required";
+		if (!outputFormat.trim()) return "Output format is required";
+		if (!inputDescription.trim()) return "Input description is required";
+		if (!outputDescription.trim()) return "Output description is required";
+
+		if (title.length > puzzleTitleMaxLength)
+			return `Title must be at most ${puzzleTitleMaxLength} characters`;
+
+		if (description.length > puzzleDescriptionMaxLength)
+			return `Description must be at most ${puzzleDescriptionMaxLength} characters`;
+
+		const validTestCases = testCases.filter(
+			(tc) => tc.input.trim() && tc.output.trim(),
+		);
+		if (validTestCases.length === 0)
+			return "At least one complete test case is required";
+
+		return null;
+	};
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setError("");
+
+		const validationError = validateForm();
+		if (validationError) {
+			setError(validationError);
+			return;
+		}
+
+		setIsLoading(true);
+
+		try {
+			const validTestCases = testCases.filter(
+				(tc) => tc.input.trim() && tc.output.trim(),
+			);
+
+			const result = await createPuzzle({
+				title: title.trim(),
+				description: description.trim(),
+				inputFormat: inputFormat.trim(),
+				outputFormat: outputFormat.trim(),
+				inputDescription: inputDescription.trim(),
+				outputDescription: outputDescription.trim(),
+				testCases: validTestCases,
+			});
+
+			if (result.success) {
+				router.push(`/puzzles/${result.puzzleId}`);
+			} else {
+				setError(result.error || "Failed to create puzzle");
+			}
+		} catch (error) {
+			setError("An unexpected error occurred");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	return (
+		<div className="max-w-4xl mx-auto space-y-8">
+			<div className="text-center space-y-4">
+				<h1 className="text-4xl font-bold text-white">🧩 Submit a Puzzle</h1>
+				<p className="text-white/60 max-w-2xl mx-auto">
+					Create a programming challenge for the community. Write clear
+					instructions and provide test cases to validate solutions.
+				</p>
+			</div>
+
+			<form onSubmit={handleSubmit} className="space-y-8">
+				{/* Basic Information */}
+				<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 space-y-6">
+					<h2 className="text-2xl font-bold text-white">Basic Information</h2>
+
+					<div>
+						<label
+							htmlFor="title"
+							className="block text-sm font-medium text-white mb-2"
+						>
+							Puzzle Title *
+						</label>
+						<input
+							id="title"
+							type="text"
+							value={title}
+							onChange={(e) => setTitle(e.target.value)}
+							placeholder="e.g., Reverse a String"
+							className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
+						/>
+					</div>
+
+					<div>
+						<label
+							htmlFor="description"
+							className="block text-sm font-medium text-white mb-2"
+						>
+							Description * (Markdown supported)
+						</label>
+						<textarea
+							id="description"
+							value={description}
+							onChange={(e) => setDescription(e.target.value)}
+							rows={6}
+							placeholder="Describe your puzzle. What should the function/program do? Include examples and constraints."
+							className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-y"
+						/>
+					</div>
+				</div>
+
+				{/* Input/Output Format */}
+				<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 space-y-6">
+					<h2 className="text-2xl font-bold text-white">
+						Input & Output Format
+					</h2>
+
+					<div className="grid md:grid-cols-2 gap-6">
+						<div>
+							<div>
+								<label
+									htmlFor="inputFormat"
+									className="block text-sm font-medium text-white mb-2"
+								>
+									Input Format *
+								</label>
+								<select
+									id="inputFormat"
+									value={inputFormat}
+									onChange={(e) =>
+										setInputFormat(e.target.value as InputOutputFormat)
+									}
+									className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
+								>
+									{inputOutputFormats.map((format) => (
+										<option key={format} value={format}>
+											{format.charAt(0).toUpperCase() + format.slice(1)}
+										</option>
+									))}
+								</select>
+							</div>
+							<div className="mt-4">
+								<label
+									htmlFor="inputDescription"
+									className="block text-sm font-medium text-white mb-2"
+								>
+									Input Description *
+								</label>
+								<textarea
+									id="inputDescription"
+									value={inputDescription}
+									onChange={(e) => setInputDescription(e.target.value)}
+									rows={6}
+									placeholder="Describe the input format. Include examples if necessary."
+									className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-y"
+								/>
+							</div>
+						</div>
+
+						<div>
+							<div>
+								<label
+									htmlFor="outputFormat"
+									className="block text-sm font-medium text-white mb-2"
+								>
+									Output Format *
+								</label>
+								<select
+									id="outputFormat"
+									value={outputFormat}
+									onChange={(e) =>
+										setOutputFormat(e.target.value as InputOutputFormat)
+									}
+									className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
+								>
+									{inputOutputFormats.map((format) => (
+										<option key={format} value={format}>
+											{format.charAt(0).toUpperCase() + format.slice(1)}
+										</option>
+									))}
+								</select>
+							</div>
+							<div className="mt-4">
+								<label
+									htmlFor="outputDescription"
+									className="block text-sm font-medium text-white mb-2"
+								>
+									Output Description *
+								</label>
+								<textarea
+									id="outputDescription"
+									value={outputDescription}
+									onChange={(e) => setOutputDescription(e.target.value)}
+									rows={6}
+									placeholder="Describe the output format. Include examples if necessary."
+									className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-y"
+								/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				{/* Test Cases */}
+				<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 space-y-6">
+					<div className="flex items-center justify-between">
+						<h2 className="text-2xl font-bold text-white">Test Cases</h2>
+						<button
+							type="button"
+							onClick={addTestCase}
+							className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+						>
+							+ Add Test Case
+						</button>
+					</div>
+
+					<p className="text-white/60 text-sm">
+						Provide at least one test case. These will be used to validate user
+						solutions.
+					</p>
+
+					<div className="space-y-4">
+						{testCases.map((testCase, index) => (
+							<div
+								key={index}
+								className="bg-white/5 border border-white/10 rounded-lg p-4 space-y-4"
+							>
+								<div className="flex items-center justify-between">
+									<h3 className="text-white font-semibold">
+										Test Case {index + 1}
+									</h3>
+									{testCases.length > 1 && (
+										<button
+											type="button"
+											onClick={() => removeTestCase(index)}
+											className="text-red-400 hover:text-red-300 text-sm"
+										>
+											Remove
+										</button>
+									)}
+								</div>
+
+								<div className="grid md:grid-cols-2 gap-4">
+									<div>
+										<label className="block text-sm font-medium text-white mb-2">
+											Input
+										</label>
+										<TypedFunctionInput
+											type={inputFormat}
+											value={testCase.input}
+											onChange={(value) => {
+												console.log("value", value);
+												updateTestCase(index, "input", value);
+											}}
+										/>
+									</div>
+
+									<div>
+										<label className="block text-sm font-medium text-white mb-2">
+											Expected Output
+										</label>
+										<TypedFunctionInput
+											type={outputFormat}
+											value={testCase.output}
+											onChange={(value) => {
+												updateTestCase(index, "output", value);
+											}}
+										/>
+									</div>
+								</div>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* Error Display */}
+				{error && (
+					<div className="bg-red-900/50 border border-red-500/50 rounded-lg p-4">
+						<p className="text-red-200">{error}</p>
+					</div>
+				)}
+
+				{/* Submit Button */}
+				<div className="flex justify-center">
+					<button
+						type="submit"
+						disabled={isLoading}
+						className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+					>
+						{isLoading ? "Creating Puzzle..." : "Create Puzzle"}
+					</button>
+				</div>
+			</form>
+		</div>
+	);
+}

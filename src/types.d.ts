@@ -6,11 +6,28 @@ type PublicPuzzle = {
 	author: {
 		name: string;
 	};
-	solutions: Array<{
-		charCount: number;
-		user: {
-			name: string;
-		};
-	}>;
+	testCases: Array<{ input: string; output: string }>;
+	solutions: Array<Solution>;
 	votes: Array<{ id: string }>;
+	inputFormat: InputOutputFormat;
+	outputFormat: InputOutputFormat;
+	inputDescription: string;
+	outputDescription: string;
 };
+
+type Solution = {
+	id: string;
+	userId: string;
+	user: {
+		name: string;
+	};
+	charCount: number;
+};
+
+type InputOutputFormat =
+	| "string"
+	| "number"
+	| "boolean"
+	| "number[]"
+	| "string[]"
+	| "boolean[]";

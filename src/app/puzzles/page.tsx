@@ -69,9 +69,9 @@ function PuzzleGrid({ puzzles }: { puzzles: Awaited<PublicPuzzle[]> }) {
 export default async function PuzzlesPage({
 	searchParams,
 }: {
-	searchParams: { search?: string };
+	searchParams: Promise<{ search?: string }>;
 }) {
-	const puzzles = await getPuzzles(searchParams.search);
+	const puzzles = await getPuzzles((await searchParams).search);
 
 	return (
 		<div className="space-y-8">

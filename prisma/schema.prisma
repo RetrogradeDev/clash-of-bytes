@@ -54,6 +54,8 @@ model Puzzle {
   description  String // Markdown
   inputFormat  String
   outputFormat String
+  inputDescription  String
+  outputDescription String
   testCases    Json // Array of {input: string, output: string}
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
