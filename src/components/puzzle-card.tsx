@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2Icon, StarIcon } from "lucide-react";
+import { CheckCircle2Icon, ClockIcon, StarIcon } from "lucide-react";
 
 type PuzzleWithDetails = {
 	id: string;
@@ -37,8 +37,8 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 		>
 			{featured && (
 				<div className="flex items-center justify-center mb-4">
-					<span className="bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
-						⭐ Featured
+					<span className="flex items-center bg-yellow-400 text-black px-3 py-1 rounded-full text-sm font-semibold">
+						<StarIcon className="size-4 mr-1" /> Featured
 					</span>
 				</div>
 			)}
@@ -54,7 +54,8 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 
 				<div className="flex items-center justify-between text-sm text-white/60">
 					<span>by @{puzzle.author.name}</span>
-					<span>
+					<span className="flex items-center">
+						<ClockIcon className="size-4 mr-2" />
 						{formatDistanceToNow(puzzle.createdAt, { addSuffix: true })}
 					</span>
 				</div>

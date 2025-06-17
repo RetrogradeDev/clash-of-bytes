@@ -7,6 +7,7 @@ import { VoteButton } from "@/components/vote-button";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { PuzzleLeaderboard } from "@/components/puzzle-leaderboard";
+import { StarIcon } from "lucide-react";
 
 async function getPuzzle(id: string): Promise<PublicPuzzle> {
 	const puzzle = await prisma.puzzle.findUnique({
@@ -109,8 +110,8 @@ export default async function PuzzlePage({
 							{puzzle.featuredDate && (
 								<>
 									<span>•</span>
-									<span className="bg-yellow-400 text-black px-2 py-1 rounded text-xs font-semibold">
-										⭐ Featured
+									<span className="flex items-center gap-1 bg-yellow-400 text-black px-2 py-1 rounded text-xs font-semibold">
+										<StarIcon className="w-4 h-4" /> Featured
 									</span>
 								</>
 							)}

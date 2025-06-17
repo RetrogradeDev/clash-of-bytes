@@ -6,18 +6,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 export function SearchAndFilter() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
-	const [searchTerm, setSearchTerm] = useState(
-		searchParams.get("search") || "",
-	);
+	const [searchTerm, setSearchTerm] = useState(searchParams.get("q") || "");
 
 	const handleSearch = (e: React.FormEvent) => {
 		e.preventDefault();
 		const params = new URLSearchParams(searchParams);
 
 		if (searchTerm.trim()) {
-			params.set("search", searchTerm.trim());
+			params.set("q", searchTerm.trim());
 		} else {
-			params.delete("search");
+			params.delete("q");
 		}
 
 		router.push(`/puzzles?${params.toString()}`);
@@ -26,7 +24,7 @@ export function SearchAndFilter() {
 	const handleClearSearch = () => {
 		setSearchTerm("");
 		const params = new URLSearchParams(searchParams);
-		params.delete("search");
+		params.delete("q");
 		router.push(`/puzzles?${params.toString()}`);
 	};
 
