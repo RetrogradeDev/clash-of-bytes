@@ -1,4 +1,4 @@
 - [x] Fix dropdown colors
 - [x] Handle exec errors and stdout
-- [ ] fix editor bounds
+- [x] fix editor bounds
 - [ ] not only char challenges

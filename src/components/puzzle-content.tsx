@@ -171,7 +171,7 @@ export function PuzzleContent({
 				</div>
 			</div>
 
-			<div className="border border-white/20 rounded-lg overflow-hidden">
+			<div className="border border-white/20 rounded-lg">
 				<Editor
 					height="400px"
 					language={language}
