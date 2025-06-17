@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import { submitSolution } from "@/lib/actions";
-import { executeCode } from "@/lib/code-execution";
+import { executeCode, type TestResult } from "@/lib/code-execution";
+import ReactMarkdown from "react-markdown";
 
 type Language = "javascript" | "python";
 
@@ -36,13 +37,9 @@ export function PuzzleContent({
 	);
 	const [isRunning, setIsRunning] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const [testResults, setTestResults] = useState<Array<{
-		passed: boolean;
-		input: string;
-		expected: string;
-		actual: string;
-		error?: string;
-	}> | null>(null);
+	const [testResults, setTestResults] = useState<Array<TestResult> | null>(
+		null,
+	);
 	const [error, setError] = useState("");
 	const [success, setSuccess] = useState("");
 
@@ -75,6 +72,8 @@ export function PuzzleContent({
 		setError("");
 		setTestResults(null);
 
+		console.log("Running code with language:", language);
+
 		try {
 			const testCases = puzzle.testCases as Array<{
 				input: string;
@@ -89,6 +88,8 @@ export function PuzzleContent({
 			} else {
 				setError(`${passedCount}/${results.length} test cases passed`);
 			}
+
+			console.log("Test results:", results);
 		} catch (error) {
 			setError("Failed to execute code: " + (error as Error).message);
 		} finally {
@@ -134,6 +135,8 @@ export function PuzzleContent({
 					setSuccess(
 						`Solution submitted! Your code: ${result.charCount} characters 🎯`,
 					);
+
+					// TODO: Update UI to show new solution
 				} else {
 					setSuccess(
 						`Your previous solution (${result.charCount} chars) is still better!`,
@@ -272,9 +275,19 @@ export function PuzzleContent({
 													: "bg-red-900/30 text-red-200"
 											}`}
 										>
-											{result.error || result.actual}
+											{result.actual || "No output"}
 										</pre>
 									</div>
+								</div>
+
+								<p className="mt-4 text-sm text-white/60">Program Output:</p>
+								<div className="mt-2 text-sm text-white/70  p-2 bg-gray-900/60 rounded">
+									{result.error && (
+										<div className="my-2 text-sm text-red-200 font-semibold">
+											Error: {result.error}
+										</div>
+									)}
+									<ReactMarkdown>{result.output}</ReactMarkdown>
 								</div>
 							</div>
 						))}

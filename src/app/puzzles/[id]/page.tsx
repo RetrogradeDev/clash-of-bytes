@@ -6,6 +6,7 @@ import { PuzzleContent } from "@/components/puzzle-content";
 import { VoteButton } from "@/components/vote-button";
 import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
+import { PuzzleLeaderboard } from "@/components/puzzle-leaderboard";
 
 async function getPuzzle(id: string): Promise<PublicPuzzle> {
 	const puzzle = await prisma.puzzle.findUnique({
@@ -89,11 +90,6 @@ export default async function PuzzlePage({
 		getUserVote(puzzle.id, session?.user?.id),
 		getUserSolution(puzzle.id, session?.user?.id),
 	]);
-
-	const topSolutions = puzzle.solutions.slice(0, 10);
-	const userRank = userSolution
-		? puzzle.solutions.findIndex((s) => s.userId === session?.user?.id) + 1
-		: null;
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-8">
@@ -206,58 +202,11 @@ export default async function PuzzlePage({
 				</div>
 
 				{/* Leaderboard */}
-				<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
-					<h2 className="text-xl font-bold text-white mb-4">🏆 Leaderboard</h2>
-
-					{userSolution && userRank && (
-						<div className="bg-purple-900/50 border border-purple-500/50 rounded-lg p-3 mb-4">
-							<div className="text-center">
-								<div className="text-purple-300 text-sm">Your Best</div>
-								<div className="text-white font-bold text-lg">
-									{userSolution.charCount} chars
-								</div>
-								<div className="text-purple-300 text-sm">Rank #{userRank}</div>
-							</div>
-						</div>
-					)}
-
-					<div className="space-y-3">
-						{topSolutions.length > 0 ? (
-							topSolutions.map((solution, index) => (
-								<div
-									key={solution.id}
-									className={`flex items-center justify-between p-3 rounded-lg ${
-										solution.userId === session?.user?.id
-											? "bg-purple-900/50 border border-purple-500/50"
-											: "bg-white/5"
-									}`}
-								>
-									<div className="flex items-center space-x-3">
-										<span className="text-white font-bold text-lg">
-											#{index + 1}
-										</span>
-										<div>
-											<div className="text-white font-semibold">
-												@{solution.user.name}
-											</div>
-										</div>
-									</div>
-									<div className="text-right">
-										<div className="text-white font-bold">
-											{solution.charCount}
-										</div>
-										<div className="text-white/60 text-xs">chars</div>
-									</div>
-								</div>
-							))
-						) : (
-							<div className="text-center text-white/60 py-4">
-								<div className="text-4xl mb-2">🎯</div>
-								<p>Be the first to solve this puzzle!</p>
-							</div>
-						)}
-					</div>
-				</div>
+				<PuzzleLeaderboard
+					solutions={puzzle.solutions}
+					userSolution={userSolution}
+					session={session}
+				/>
 			</div>
 		</div>
 	);

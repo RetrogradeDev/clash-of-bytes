@@ -6,6 +6,7 @@ export interface TestResult {
 	expected: string;
 	actual: string;
 	error?: string;
+	output: string;
 }
 
 export async function executeCode(
@@ -18,20 +19,26 @@ export async function executeCode(
 	for (const testCase of testCases) {
 		try {
 			if (language === "javascript") {
-				const result = await executeJavaScript(code, testCase.input);
+				const [result, stdout] = await executeJavaScript(code, testCase.input);
 				results.push({
 					passed: result.trim() === testCase.output.trim(),
 					input: testCase.input,
 					expected: testCase.output,
 					actual: result,
+					output: stdout,
 				});
 			} else if (language === "python") {
-				const result = await executePython(code, testCase.input);
+				const [result, stdout, error] = await executePython(
+					code,
+					testCase.input,
+				);
 				results.push({
-					passed: result.trim() === testCase.output.trim(),
+					passed: !error && result.trim() === testCase.output.trim(),
 					input: testCase.input,
 					expected: testCase.output,
 					actual: result,
+					output: stdout,
+					error,
 				});
 			}
 		} catch (error) {
@@ -41,6 +48,7 @@ export async function executeCode(
 				expected: testCase.output,
 				actual: "",
 				error: (error as Error).message,
+				output: "",
 			});
 		}
 	}
@@ -48,33 +56,61 @@ export async function executeCode(
 	return results;
 }
 
-async function executeJavaScript(code: string, input: string): Promise<string> {
+async function executeJavaScript(
+	code: string,
+	input: string,
+): Promise<[string, string]> {
 	return new Promise((resolve, reject) => {
 		try {
 			// Create a safe execution environment
-			const safeEval = new Function(
-				"input",
-				`
-        ${code}
-        
-        if (typeof solve !== 'function') {
-          throw new Error('Please define a function called "solve" that takes input as a parameter');
-        }
-        
-        return solve(input);
-      `,
-			);
+			const logs: string[] = [];
+			const originalConsoleLog = console.log;
 
-			const result = safeEval(input);
-			resolve(String(result));
+			console.log = (...args) => logs.push(args.join(" "));
+			console.error = (...args) => logs.push("**ERROR:** " + args.join(" "));
+			console.warn = (...args) => logs.push("**WARNING:** " + args.join(" "));
+			console.debug = (...args) => logs.push("**DEBUG:** " + args.join(" "));
+			console.info = (...args) => logs.push("**INFO:** " + args.join(" "));
+
+			try {
+				const safeEval = new Function(
+					"input",
+					`
+                    ${code}
+                    
+                    if (typeof solve !== 'function') {
+                      throw new Error('Please define a function called "solve" that takes input as a parameter');
+                    }
+                    
+                    return solve(input);
+                  `,
+				);
+
+				let result = safeEval(input);
+				const stdout = logs.join("\n");
+
+				try {
+					result = result.toString();
+				} catch (error) {
+					console.error("Error converting result to string:", error);
+					result = "";
+				}
+
+				// Resolve with the result and captured stdout
+				resolve([result, stdout]);
+			} finally {
+				console.log = originalConsoleLog;
+			}
 		} catch (error) {
 			reject(error);
 		}
 	});
 }
 
-async function executePython(code: string, input: string): Promise<string> {
-	// For Python, we'll use Pyodide (Web Assembly Python)
+async function executePython(
+	code: string,
+	input: string,
+): Promise<[string, string, string]> {
 	try {
 		// @ts-ignore
 		if (!window.pyodide) {
@@ -102,7 +138,7 @@ async function executePython(code: string, input: string): Promise<string> {
 			.join("\n");
 
 		// Set up the Python environment
-		pyodide.runPython(`
+		const full = `
 import sys
 from io import StringIO
 
@@ -111,7 +147,7 @@ old_stdout = sys.stdout
 sys.stdout = captured_output = StringIO()
 
 try:
-    ${fixedCode}
+${fixedCode}
     
     if 'solve' not in globals():
         raise NameError('Please define a function called "solve" that takes input as a parameter')
@@ -126,19 +162,21 @@ finally:
     sys.stdout = old_stdout
     
 output = captured_output.getvalue()
-    `);
+    `;
 
-		const stdout = pyodide.runPython("output");
-		const resultMatch = stdout.match(/_RES=(.*)/);
+		pyodide.runPython(full);
+
+		const all_stdout = pyodide.runPython("output");
+		const resultMatch: RegExpMatchArray | null = all_stdout.match(/_RES=(.*)/);
+		const printStdout: string = all_stdout.replace(/_RES=(.*)/, "").trim();
+
 		if (resultMatch) {
-			return resultMatch[1];
+			return [resultMatch[1], printStdout, ""];
 		} else {
-			throw new Error("Python execution error: " + stdout);
+			return ["", printStdout, "Python execution error:" + all_stdout];
 		}
 	} catch (error) {
-		console.error("Python execution error:", error);
-
-		throw new Error(`Python execution error: ${(error as Error).message}`);
+		return ["", "", "Python execution error: " + (error as Error).message];
 	}
 }
 

@@ -13,11 +13,13 @@ type PublicPuzzle = {
 	outputFormat: InputOutputFormat;
 	inputDescription: string;
 	outputDescription: string;
+	featuredDate?: Date | null;
 };
 
 type Solution = {
 	id: string;
 	userId: string;
+	language: "python" | "javascript";
 	user: {
 		name: string;
 	};
