@@ -3,8 +3,9 @@
 - [x] fix editor bounds
 - [ ] not only char challenges
 - [x] refactor
-- [ ] responsive
+- [x] responsive
 - [x] logged out access
 - [x] make all pages like the profile (theme)
 - [x] support both python and js solutions
 - [ ] test leaderboards better with a lot of users
+- [ ] check responsiveness on a real phone

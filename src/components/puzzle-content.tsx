@@ -141,6 +141,8 @@ export function PuzzleContent({
 					);
 
 					// TODO: Update UI to show new solution
+					// Quick fix: Reload the page
+					window.location.reload();
 				} else {
 					setSuccess(
 						`Your previous solution (${result.charCount} chars) is still better!`,
