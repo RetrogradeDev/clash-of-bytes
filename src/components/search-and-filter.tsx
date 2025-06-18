@@ -29,7 +29,7 @@ export function SearchAndFilter() {
 	};
 
 	return (
-		<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
+		<>
 			<form onSubmit={handleSearch} className="flex gap-4">
 				<div className="flex-1">
 					<input
@@ -56,6 +56,6 @@ export function SearchAndFilter() {
 					</button>
 				)}
 			</form>
-		</div>
+		</>
 	);
 }
