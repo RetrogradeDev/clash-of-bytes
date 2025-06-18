@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PuzzleCard } from "@/components/puzzle-card";
+import { ZapIcon } from "lucide-react";
 
 async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 	const today = new Date();
@@ -116,67 +117,80 @@ export default async function Home() {
 	]);
 
 	return (
-		<div className="space-y-12">
-			{/* Hero Section */}
-			<div className="text-center space-y-6">
-				<h1 className="text-5xl font-bold text-white">⚡ Clash of Bytes</h1>
-				<p className="text-xl text-white/80 max-w-2xl mx-auto">
-					The ultimate code golf platform. Solve programming puzzles in as few
-					characters as possible and compete with developers worldwide.
-				</p>
-				<div className="flex justify-center space-x-4">
-					<Link
-						href="/puzzles"
-						className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
-					>
-						Browse Puzzles
-					</Link>
-					<Link
-						href="/submit"
-						className="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-white/20"
-					>
-						Submit a Puzzle
-					</Link>
+		<div className="max-w-3xl mx-auto p-6">
+			<div className="space-y-8">
+				{/* Hero Section */}
+				<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
+					<div className="text-center space-y-6">
+						<div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto">
+							<ZapIcon className="w-10 h-10 text-white" />
+						</div>
+						<h1 className="text-5xl font-bold text-white">Clash of Bytes</h1>
+						<p className="text-xl text-purple-300 max-w-2xl mx-auto">
+							The ultimate code golf platform. Solve programming puzzles in as
+							few characters as possible and compete with developers worldwide.
+						</p>
+						<div className="flex justify-center space-x-4">
+							<Link
+								href="/puzzles"
+								className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
+							>
+								Browse Puzzles
+							</Link>
+							<Link
+								href="/submit"
+								className="bg-gray-700 hover:bg-gray-600 text-white px-8 py-3 rounded-lg font-semibold transition-colors border border-gray-600"
+							>
+								Submit a Puzzle
+							</Link>
+						</div>
+					</div>
 				</div>
 			</div>
 
 			{/* Featured Puzzle */}
 			{featuredPuzzle && (
-				<section className="space-y-6">
-					<div className="text-center">
-						<h2 className="text-3xl font-bold text-white mb-2">
-							🌟 Today's Featured Puzzle
-						</h2>
-						<p className="text-white/60">The community's favorite challenge</p>
-					</div>
-					<div className="max-w-2xl mx-auto">
+				<div className="space-y-6 mt-4">
+					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
+						<div className="text-center mb-6">
+							<h2 className="text-3xl font-bold text-white mb-2">
+								🌟 Today's Featured Puzzle
+							</h2>
+							<p className="text-purple-300">
+								The community's favorite challenge
+							</p>
+						</div>
 						<PuzzleCard puzzle={featuredPuzzle} featured />
 					</div>
-				</section>
+				</div>
 			)}
 
 			{/* Recent Puzzles */}
-			<section className="space-y-6">
-				<div className="text-center">
-					<h2 className="text-3xl font-bold text-white mb-2">
-						🆕 Recent Puzzles
-					</h2>
-					<p className="text-white/60">Fresh challenges from the community</p>
+			<div className="space-y-6 mt-4">
+				<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
+					<div className="text-center mb-6">
+						<h2 className="text-3xl font-bold text-white mb-2">
+							Recent Puzzles
+						</h2>
+						<p className="text-purple-300">
+							Fresh challenges from the community
+						</p>
+					</div>
+					<div className="grid md:grid-cols-2 gap-6">
+						{recentPuzzles.map((puzzle: any) => (
+							<PuzzleCard key={puzzle.id} puzzle={puzzle} />
+						))}
+					</div>
+					<div className="text-center mt-6">
+						<Link
+							href="/puzzles"
+							className="text-purple-400 hover:text-purple-300 font-semibold"
+						>
+							View all puzzles →
+						</Link>
+					</div>
 				</div>
-				<div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-					{recentPuzzles.map((puzzle) => (
-						<PuzzleCard key={puzzle.id} puzzle={puzzle} />
-					))}
-				</div>
-				<div className="text-center">
-					<Link
-						href="/puzzles"
-						className="text-purple-400 hover:text-purple-300 font-semibold"
-					>
-						View all puzzles →
-					</Link>
-				</div>
-			</section>
+			</div>
 		</div>
 	);
 }

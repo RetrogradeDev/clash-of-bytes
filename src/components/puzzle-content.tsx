@@ -5,6 +5,7 @@ import { Editor } from "@monaco-editor/react";
 import { submitSolution } from "@/lib/actions";
 import { executeCode, type TestResult } from "@/lib/code-execution";
 import ReactMarkdown from "react-markdown";
+import { Card } from "./card";
 
 type Language = "javascript" | "python";
 
@@ -153,17 +154,16 @@ export function PuzzleContent({
 	};
 
 	const charCount = code.length;
-
 	return (
-		<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6 space-y-6">
+		<Card className="space-y-6">
 			<div className="flex items-center justify-between">
 				<h2 className="text-xl font-bold text-white">💻 Code Editor</h2>
 				<div className="flex items-center space-x-4">
-					<span className="text-white/60 text-sm">{charCount} characters</span>
+					<span className="text-gray-400 text-sm">{charCount} characters</span>
 					<select
 						value={language}
 						onChange={(e) => handleLanguageChange(e.target.value as Language)}
-						className="bg-white/10 border border-white/20 rounded text-white text-sm px-3 py-1"
+						className="bg-gray-800 border border-gray-600 rounded text-white text-sm px-3 py-1 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
 					>
 						<option value="javascript">JavaScript</option>
 						<option value="python">Python</option>
@@ -171,7 +171,7 @@ export function PuzzleContent({
 				</div>
 			</div>
 
-			<div className="border border-white/20 rounded-lg">
+			<div className="border border-gray-600 rounded-lg">
 				<Editor
 					height="400px"
 					language={language}
@@ -206,7 +206,7 @@ export function PuzzleContent({
 				</button>
 
 				{!isAuthenticated && (
-					<span className="text-white/60 text-sm">
+					<span className="text-gray-400 text-sm">
 						Sign in to submit solutions
 					</span>
 				)}
@@ -255,24 +255,24 @@ export function PuzzleContent({
 
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
 									<div>
-										<div className="text-white/60 mb-1">Input:</div>
-										<pre className="bg-black/20 p-2 rounded text-white font-mono">
+										<div className="text-gray-400 mb-1">Input:</div>
+										<pre className="bg-gray-900/50 p-2 rounded text-white font-mono border border-gray-600">
 											{result.input}
 										</pre>
 									</div>
 									<div>
-										<div className="text-white/60 mb-1">Expected:</div>
-										<pre className="bg-black/20 p-2 rounded text-white font-mono">
+										<div className="text-gray-400 mb-1">Expected:</div>
+										<pre className="bg-gray-900/50 p-2 rounded text-white font-mono border border-gray-600">
 											{result.expected}
 										</pre>
 									</div>
 									<div>
-										<div className="text-white/60 mb-1">Your Output:</div>
+										<div className="text-gray-400 mb-1">Your Output:</div>
 										<pre
-											className={`p-2 rounded font-mono ${
+											className={`p-2 rounded font-mono border ${
 												result.passed
-													? "bg-green-900/30 text-green-200"
-													: "bg-red-900/30 text-red-200"
+													? "bg-green-900/30 text-green-200 border-green-500/50"
+													: "bg-red-900/30 text-red-200 border-red-500/50"
 											}`}
 										>
 											{result.actual || "No output"}
@@ -280,8 +280,8 @@ export function PuzzleContent({
 									</div>
 								</div>
 
-								<p className="mt-4 text-sm text-white/60">Program Output:</p>
-								<div className="mt-2 text-sm text-white/70  p-2 bg-gray-900/60 rounded">
+								<p className="mt-4 text-sm text-gray-400">Program Output:</p>
+								<div className="mt-2 text-sm text-gray-300 p-2 bg-gray-900/60 rounded border border-gray-600">
 									{result.error && (
 										<div className="my-2 text-sm text-red-200 font-semibold">
 											Error: {result.error}
@@ -294,6 +294,6 @@ export function PuzzleContent({
 					</div>
 				</div>
 			)}
-		</div>
+		</Card>
 	);
 }

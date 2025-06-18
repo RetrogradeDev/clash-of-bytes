@@ -29,7 +29,7 @@ export function SearchAndFilter() {
 	};
 
 	return (
-		<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+		<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 			<form onSubmit={handleSearch} className="flex gap-4">
 				<div className="flex-1">
 					<input
@@ -46,7 +46,7 @@ export function SearchAndFilter() {
 				>
 					Search
 				</button>
-				{searchParams.get("search") && (
+				{searchParams.get("q") && (
 					<button
 						type="button"
 						onClick={handleClearSearch}

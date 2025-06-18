@@ -5,6 +5,6 @@
 - [ ] refactor
 - [ ] responsive
 - [x] logged out access
-- [ ] make all pages like the profile (theme)
+- [x] make all pages like the profile (theme)
 - [x] support both python and js solutions
 - [ ] test leaderboards better with a lot of users

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { JavaScriptIcon } from "./icons/javascript";
 import { PythonIcon } from "./icons/python";
+import { Card } from "./card";
 
 export function PuzzleLeaderboard({
 	solutions,
@@ -41,12 +42,12 @@ export function PuzzleLeaderboard({
 	}, [userSolutions, filteredSolutions]);
 
 	return (
-		<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
+		<Card>
 			<div className="flex items-center justify-between mb-8">
 				<h2 className="text-xl font-bold text-white">🏆 Leaderboard</h2>
 
 				<select
-					className="bg-white/5 border border-white/10 text-white px-3 py-1 rounded-md text-sm"
+					className="bg-gray-800 border border-gray-600 text-white px-3 py-1 rounded-md text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
 					defaultValue="all"
 					onChange={(e) =>
 						setFilter(e.target.value as "all" | "javascript" | "python")
@@ -59,7 +60,7 @@ export function PuzzleLeaderboard({
 			</div>
 
 			{userSolutions && userRank && (
-				<div className="bg-purple-900/50 border border-purple-500/50 rounded-lg p-3 mb-4">
+				<div className="bg-purple-900/10 border border-purple-500/50 rounded-lg p-3 mb-4">
 					<div className="text-center">
 						<div className="text-purple-300 text-sm">Your Best</div>
 						<div className="text-white font-bold text-lg">
@@ -77,8 +78,8 @@ export function PuzzleLeaderboard({
 							key={solution.id}
 							className={`flex items-center justify-between p-3 my-3 rounded-lg ${
 								solution.userId === session?.user?.id
-									? "bg-purple-900/50 border border-purple-500/50"
-									: "bg-white/5"
+									? "bg-purple-900/40 border border-purple-500/50"
+									: "bg-gray-800/50 border border-gray-600"
 							}`}
 						>
 							<div className="flex items-center space-x-3">
@@ -87,7 +88,7 @@ export function PuzzleLeaderboard({
 								</span>
 								<div>
 									<Link
-										className="text-white font-semibold"
+										className="text-purple-400 hover:text-purple-300 font-semibold"
 										href={`/users/${solution.user.name}`}
 									>
 										@{solution.user.name}
@@ -96,7 +97,7 @@ export function PuzzleLeaderboard({
 							</div>
 							<div className="flex items-center space-x-4">
 								{filter === "all" && (
-									<div className="text-white/60 text-sm">
+									<div className="text-gray-400 text-sm">
 										{solution.language === "javascript" ? (
 											<JavaScriptIcon
 												strokeWidth={2}
@@ -111,18 +112,18 @@ export function PuzzleLeaderboard({
 											/>
 										)}
 									</div>
-								)}
+								)}{" "}
 								<div className="text-right">
 									<div className="text-white font-bold">
 										{solution.charCount}
 									</div>
-									<div className="text-white/60 text-xs">chars</div>
+									<div className="text-gray-400 text-xs">chars</div>
 								</div>
 							</div>
 						</div>
 					))
 			) : (
-				<div className="text-center text-white/60 py-4">
+				<div className="text-center text-gray-400 py-4">
 					<div className="text-4xl mb-2">🎯</div>
 					{solutions.length === 0 ? (
 						<p>Be the first to solve this puzzle!</p>
@@ -131,6 +132,6 @@ export function PuzzleLeaderboard({
 					)}
 				</div>
 			)}
-		</div>
+		</Card>
 	);
 }

@@ -15,7 +15,7 @@
     "bcryptjs": "^3.0.2",
     "better-auth": "^1.2.9",
     "date-fns": "^4.1.0",
-    "lucide-react": "^0.516.0",
+    "lucide-react": "^0.517.0",
     "next": "15.3.3",
     "prisma": "^6.9.0",
     "pyodide": "^0.27.7",
