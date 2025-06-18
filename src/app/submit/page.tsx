@@ -6,9 +6,14 @@ import { useSession } from "@/lib/auth-client";
 import { createPuzzle } from "@/lib/actions";
 import { TypedFunctionInput } from "@/components/typed-input";
 import { PuzzleIcon } from "lucide-react";
+import { censor } from "@/lib/profanity";
 
 const puzzleTitleMaxLength = 100;
+const puzzleTitleMinLength = 5;
 const puzzleDescriptionMaxLength = 1000;
+const puzzleDescriptionMinLength = 20;
+const testCasesMaxLength = 30;
+
 const inputOutputFormats: InputOutputFormat[] = [
 	"string",
 	"number",
@@ -93,9 +98,16 @@ export default function SubmitPuzzlePage() {
 
 		if (title.length > puzzleTitleMaxLength)
 			return `Title must be at most ${puzzleTitleMaxLength} characters`;
+		if (title.length < puzzleTitleMinLength)
+			return `Title must be at least ${puzzleTitleMinLength} characters`;
 
 		if (description.length > puzzleDescriptionMaxLength)
 			return `Description must be at most ${puzzleDescriptionMaxLength} characters`;
+		if (description.length < puzzleDescriptionMinLength)
+			return `Description must be at least ${puzzleDescriptionMinLength} characters`;
+
+		if (testCases.length > testCasesMaxLength)
+			return `At most ${testCasesMaxLength} test cases are allowed`;
 
 		const validTestCases = testCases.filter(
 			(tc) => tc.input.trim() && tc.output.trim(),
@@ -124,12 +136,12 @@ export default function SubmitPuzzlePage() {
 			);
 
 			const result = await createPuzzle({
-				title: title.trim(),
-				description: description.trim(),
-				inputFormat: inputFormat.trim(),
-				outputFormat: outputFormat.trim(),
-				inputDescription: inputDescription.trim(),
-				outputDescription: outputDescription.trim(),
+				title: censor(title.trim()),
+				description: censor(description.trim()),
+				inputFormat: censor(inputFormat.trim()),
+				outputFormat: censor(outputFormat.trim()),
+				inputDescription: censor(inputDescription.trim()),
+				outputDescription: censor(outputDescription.trim()),
 				testCases: validTestCases,
 			});
 
