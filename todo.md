@@ -6,3 +6,4 @@
 - [ ] responsive
 - [ ] logged out access
 - [ ] make all pages like the profile (theme)
+- [ ] support both python and js solutions

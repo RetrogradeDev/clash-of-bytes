@@ -22,7 +22,15 @@ export default function SignInPage() {
 				{ email, password },
 				{
 					onSuccess: () => {
-						router.push("/");
+						const redirectUrl = new URLSearchParams(window.location.search).get(
+							"redirect",
+						);
+
+						if (redirectUrl) {
+							window.location.href = redirectUrl;
+						} else {
+							router.push("/");
+						}
 					},
 					onError: (ctx) => {
 						setError(ctx.error.message);

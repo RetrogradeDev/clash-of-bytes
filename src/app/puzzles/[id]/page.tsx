@@ -60,7 +60,10 @@ async function getUserVote(puzzleId: string, userId?: string) {
 	});
 }
 
-async function getUserSolution(puzzleId: string, userId?: string) {
+async function getUserSolution(
+	puzzleId: string,
+	userId?: string,
+): Promise<Solution | null> {
 	if (!userId) return null;
 
 	return await prisma.solution.findUnique({

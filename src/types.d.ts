@@ -18,6 +18,7 @@ type PublicPuzzle = {
 
 type Solution = {
 	id: string;
+	code: string;
 	userId: string;
 	language: "python" | "javascript";
 	user: {

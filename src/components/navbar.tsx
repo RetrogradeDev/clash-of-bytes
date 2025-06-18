@@ -59,7 +59,7 @@ export function Navbar() {
 						) : (
 							<div className="flex items-center space-x-2">
 								<Link
-									href="/auth/signin"
+									href={`/auth/signin?redirect=${window.location.pathname}`}
 									className="text-white/80 hover:text-white transition-colors"
 								>
 									Sign In

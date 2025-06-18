@@ -1,5 +1,8 @@
 "use client";
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { JavaScriptIcon } from "./icons/javascript";
+import { PythonIcon } from "./icons/python";
 
 export function PuzzleLeaderboard({
 	solutions,
@@ -81,14 +84,38 @@ export function PuzzleLeaderboard({
 									#{index + 1}
 								</span>
 								<div>
-									<div className="text-white font-semibold">
+									<Link
+										className="text-white font-semibold"
+										href={`/users/${solution.user.name}`}
+									>
 										@{solution.user.name}
-									</div>
+									</Link>
 								</div>
 							</div>
-							<div className="text-right">
-								<div className="text-white font-bold">{solution.charCount}</div>
-								<div className="text-white/60 text-xs">chars</div>
+							<div className="flex items-center space-x-4">
+								{filter === "all" && (
+									<div className="text-white/60 text-sm">
+										{solution.language === "javascript" ? (
+											<JavaScriptIcon
+												strokeWidth={2}
+												fill="white"
+												className="w-6 h-6"
+											/>
+										) : (
+											<PythonIcon
+												strokeWidth={2}
+												fill="white"
+												className="w-6 h-6"
+											/>
+										)}
+									</div>
+								)}
+								<div className="text-right">
+									<div className="text-white font-bold">
+										{solution.charCount}
+									</div>
+									<div className="text-white/60 text-xs">chars</div>
+								</div>
 							</div>
 						</div>
 					))
