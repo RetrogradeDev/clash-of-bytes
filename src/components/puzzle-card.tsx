@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
-import { CheckCircle2Icon, ClockIcon, StarIcon } from "lucide-react";
+import {
+	CheckCircle2Icon,
+	ClockIcon,
+	StarIcon,
+	TrophyIcon,
+} from "lucide-react";
 
 type PuzzleWithDetails = {
 	id: string;
@@ -63,20 +68,19 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 				<div className="flex items-center justify-between">
 					<div className="flex items-center space-x-4 text-sm">
 						<span className="flex items-center space-x-1 text-purple-300">
-							<StarIcon
-								className="w-4 h-4"
-								strokeWidth={2}
-								fill="currentColor"
-							/>
+							<StarIcon className="w-4 h-4" strokeWidth={2} />
 							<span>{puzzle.votes.length}</span>
+						</span>
+
+						<span className="flex items-center space-x-1 text-blue-300">
+							<CheckCircle2Icon className="w-4 h-4" strokeWidth={2} />
+							<span>{puzzle.solutions.length}</span>
 						</span>
 
 						{bestSolution && (
 							<span className="flex items-center space-x-1 text-green-300">
-								<CheckCircle2Icon className="w-4 h-4" strokeWidth={2} />
-								<span>
-									{bestSolution.charCount} chars by @{bestSolution.user.name}
-								</span>
+								<TrophyIcon className="w-4 h-4" strokeWidth={2} />
+								<span>{bestSolution.charCount} chars</span>
 							</span>
 						)}
 					</div>

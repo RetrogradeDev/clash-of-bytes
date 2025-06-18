@@ -65,7 +65,7 @@ export function PuzzleContent({
 	const handleRunCode = async () => {
 		if (!code.trim()) {
 			setError("Please enter some code first");
-			return;
+			return false;
 		}
 
 		setIsRunning(true);
@@ -73,6 +73,7 @@ export function PuzzleContent({
 		setTestResults(null);
 
 		console.log("Running code with language:", language);
+		let isSuccess = false;
 
 		try {
 			const testCases = puzzle.testCases as Array<{
@@ -85,6 +86,7 @@ export function PuzzleContent({
 			const passedCount = results.filter((r: any) => r.passed).length;
 			if (passedCount === results.length) {
 				setSuccess(`All ${passedCount} test cases passed! 🎉`);
+				isSuccess = true;
 			} else {
 				setError(`${passedCount}/${results.length} test cases passed`);
 			}
@@ -95,6 +97,8 @@ export function PuzzleContent({
 		} finally {
 			setIsRunning(false);
 		}
+
+		return isSuccess;
 	};
 
 	const handleSubmit = async () => {
@@ -109,10 +113,10 @@ export function PuzzleContent({
 		}
 
 		// Rerun tests
-		handleRunCode();
+		const ok = await handleRunCode();
 
 		// First run the code to make sure it passes
-		if (!testResults || testResults.some((r) => !r.passed)) {
+		if (!ok) {
 			setError(
 				"Please run your code and ensure all test cases pass before submitting",
 			);

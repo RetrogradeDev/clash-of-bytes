@@ -8,6 +8,7 @@ import { formatDistanceToNow } from "date-fns";
 import ReactMarkdown from "react-markdown";
 import { PuzzleLeaderboard } from "@/components/puzzle-leaderboard";
 import { StarIcon } from "lucide-react";
+import Link from "next/link";
 
 async function getPuzzle(id: string): Promise<PublicPuzzle> {
 	const puzzle = await prisma.puzzle.findUnique({
@@ -102,7 +103,15 @@ export default async function PuzzlePage({
 							{puzzle.title}
 						</h1>
 						<div className="flex items-center space-x-4 text-sm text-white/60">
-							<span>by @{puzzle.author.name}</span>
+							<span>
+								by{" "}
+								<Link
+									className="underline"
+									href={`/profile/${puzzle.author.name}`}
+								>
+									@{puzzle.author.name}
+								</Link>
+							</span>
 							<span>•</span>
 							<span>
 								{formatDistanceToNow(puzzle.createdAt, { addSuffix: true })}

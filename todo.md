@@ -2,3 +2,7 @@
 - [x] Handle exec errors and stdout
 - [x] fix editor bounds
 - [ ] not only char challenges
+- [ ] refactor
+- [ ] responsive
+- [ ] logged out access
+- [ ] make all pages like the profile (theme)
