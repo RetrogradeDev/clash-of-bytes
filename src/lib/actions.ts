@@ -1,6 +1,5 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
@@ -15,7 +14,6 @@ export async function createPuzzle(data: {
 	testCases: Array<{ input: string; output: string }>;
 }) {
 	try {
-		// Get current session
 		const session = await auth.api.getSession({
 			headers: await headers(),
 		});
@@ -27,7 +25,6 @@ export async function createPuzzle(data: {
 			};
 		}
 
-		// Validate input
 		if (!data.title.trim()) {
 			return { success: false, error: "Title is required" };
 		}
@@ -67,7 +64,6 @@ export async function createPuzzle(data: {
 			}
 		}
 
-		// Create the puzzle
 		const puzzle = await prisma.puzzle.create({
 			data: {
 				title: data.title.trim(),
@@ -101,7 +97,6 @@ export async function votePuzzle(puzzleId: string) {
 			return { success: false, error: "You must be logged in to vote" };
 		}
 
-		// Check if user already voted
 		const existingVote = await prisma.vote.findUnique({
 			where: {
 				puzzleId_userId: {
@@ -152,7 +147,6 @@ export async function submitSolution(data: {
 			};
 		}
 
-		// Validate input
 		if (!data.code.trim()) {
 			return { success: false, error: "Code cannot be empty" };
 		}
@@ -161,7 +155,6 @@ export async function submitSolution(data: {
 			return { success: false, error: "Language must be javascript or python" };
 		}
 
-		// Get the puzzle to validate
 		const puzzle = await prisma.puzzle.findUnique({
 			where: { id: data.puzzleId },
 		});

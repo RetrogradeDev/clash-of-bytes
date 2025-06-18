@@ -1,12 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+
+import { useState, useEffect, useRef } from "react";
+import { PuzzleIcon } from "lucide-react";
+
 import { useSession } from "@/lib/auth-client";
 import { createPuzzle } from "@/lib/actions";
-import { TypedFunctionInput } from "@/components/typed-input";
-import { PuzzleIcon } from "lucide-react";
 import { censor } from "@/lib/profanity";
+
+import { TypedFunctionInput } from "@/components/typed-input";
 
 const puzzleTitleMaxLength = 100;
 const puzzleTitleMinLength = 5;
@@ -159,7 +162,6 @@ export default function SubmitPuzzlePage() {
 	return (
 		<div className="max-w-3xl mx-auto p-6">
 			<div className="space-y-8">
-				{/* Header Section */}
 				<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
 					<div className="text-center">
 						<div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -174,7 +176,6 @@ export default function SubmitPuzzlePage() {
 					</div>
 				</div>{" "}
 				<form onSubmit={handleSubmit} className="space-y-8">
-					{/* Basic Information */}
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 space-y-6">
 						<h2 className="text-2xl font-bold text-white">Basic Information</h2>
 
@@ -211,8 +212,7 @@ export default function SubmitPuzzlePage() {
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-y"
 							/>
 						</div>
-					</div>{" "}
-					{/* Input/Output Format */}
+					</div>
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 space-y-6">
 						<h2 className="text-2xl font-bold text-white">
 							Input & Output Format
@@ -301,8 +301,7 @@ export default function SubmitPuzzlePage() {
 								</div>
 							</div>
 						</div>
-					</div>{" "}
-					{/* Test Cases */}
+					</div>
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 space-y-6">
 						<div className="flex items-center justify-between">
 							<h2 className="text-2xl font-bold text-white">Test Cases</h2>
@@ -373,13 +372,11 @@ export default function SubmitPuzzlePage() {
 							))}
 						</div>
 					</div>
-					{/* Error Display */}
 					{error && (
 						<div className="bg-red-900/50 border border-red-500/50 rounded-lg p-4">
 							<p className="text-red-200">{error}</p>
 						</div>
 					)}
-					{/* Submit Button */}
 					<div className="flex justify-center">
 						<button
 							type="submit"
@@ -388,7 +385,7 @@ export default function SubmitPuzzlePage() {
 						>
 							{isLoading ? "Creating Puzzle..." : "Create Puzzle"}
 						</button>
-					</div>{" "}
+					</div>
 				</form>
 			</div>
 		</div>

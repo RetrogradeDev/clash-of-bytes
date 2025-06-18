@@ -1,4 +1,5 @@
-import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+
 import { formatDistanceToNow } from "date-fns";
 import {
 	CheckCircle2Icon,
@@ -6,7 +7,8 @@ import {
 	StarIcon,
 	TrophyIcon,
 } from "lucide-react";
-import Link from "next/link";
+
+import { prisma } from "@/lib/prisma";
 
 async function getUserData(username: string): Promise<{
 	name: string;
@@ -71,7 +73,6 @@ export default async function ProfilePage({
 		<div className="max-w-3xl mx-auto p-6">
 			{user ? (
 				<div className="space-y-8">
-					{/* Header Section */}
 					<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
 						<div className="flex items-center space-x-6">
 							<div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
@@ -92,7 +93,6 @@ export default async function ProfilePage({
 						</div>
 					</div>
 
-					{/* Stats Section */}
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 							<h3 className="text-lg font-semibold text-white mb-2">
@@ -127,7 +127,6 @@ export default async function ProfilePage({
 						</div>
 					</div>
 
-					{/* Puzzles Section */}
 					<div className="space-y-6">
 						<h2 className="text-2xl font-bold text-white">Created Puzzles</h2>
 						{user.puzzles.length > 0 ? (
@@ -154,6 +153,7 @@ export default async function ProfilePage({
 												})}
 											</span>
 										</div>
+
 										<div className="flex items-center justify-between">
 											<div className="flex items-center space-x-4">
 												<span className="text-sm text-purple-300 flex items-center">

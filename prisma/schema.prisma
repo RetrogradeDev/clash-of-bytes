@@ -18,7 +18,6 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   puzzles   Puzzle[]
   solutions Solution[]
   votes     Vote[]
@@ -52,17 +51,21 @@ model Puzzle {
   id           String    @id @default(cuid())
   title        String
   description  String // Markdown
+
   inputFormat  String
   outputFormat String
+
   inputDescription  String
   outputDescription String
+
   testCases    Json // Array of {input: string, output: string}
+
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   featuredDate DateTime?
+
   authorId     String
 
-  // Relations
   author    User       @relation(references: [id], fields: [authorId], onDelete: Cascade)
   solutions Solution[]
   votes     Vote[]
@@ -76,10 +79,10 @@ model Solution {
   language  String // 'javascript' or 'python'
   charCount Int
   createdAt DateTime @default(now())
+
   puzzleId  String
   userId    String
 
-  // Relations
   puzzle Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
   user   User   @relation(references: [id], fields: [userId], onDelete: Cascade)
 

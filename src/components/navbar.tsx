@@ -10,12 +10,11 @@ export function Navbar() {
 		<nav className="bg-black/20 backdrop-blur-sm border-b border-white/10">
 			<div className="container mx-auto px-4">
 				<div className="flex items-center justify-between h-16">
-					{/* Logo */}
 					<Link href="/" className="text-2xl font-bold text-white">
 						⚡ Clash of Bytes
 					</Link>
 
-					{/* Navigation Links */}
+					{/* TODO: Add mobile menu */}
 					<div className="hidden md:flex items-center space-x-6">
 						<Link
 							href="/puzzles"
@@ -37,7 +36,6 @@ export function Navbar() {
 						</Link>
 					</div>
 
-					{/* Auth Section */}
 					<div className="flex items-center space-x-4">
 						{isPending ? (
 							<div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />

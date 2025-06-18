@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
+
 import { PuzzleCard } from "@/components/puzzle-card";
 import { SearchAndFilter } from "@/components/search-and-filter";
+
 import { Suspense } from "react";
 import { PuzzleIcon } from "lucide-react";
 
@@ -76,7 +78,6 @@ export default async function PuzzlesPage({
 	return (
 		<div className="max-w-3xl mx-auto p-6">
 			<div className="space-y-8">
-				{/* Header Section */}
 				<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
 					<div className="text-center">
 						<div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">

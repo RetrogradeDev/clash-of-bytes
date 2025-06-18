@@ -1,7 +1,7 @@
 import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 import { PuzzleCard } from "@/components/puzzle-card";
-import { ZapIcon } from "lucide-react";
 
 async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 	const today = new Date();
@@ -119,7 +119,6 @@ export default async function Home() {
 	return (
 		<div className="max-w-3xl mx-auto p-6">
 			<div className="space-y-8">
-				{/* Hero Section */}
 				<div className="mb-8">
 					<div className="text-center space-y-6">
 						<h1 className="text-5xl font-bold text-white">⚡Clash of Bytes</h1>
@@ -145,7 +144,6 @@ export default async function Home() {
 				</div>
 			</div>
 
-			{/* Featured Puzzle */}
 			{featuredPuzzle && (
 				<div className="space-y-6 mt-16">
 					<div className="text-center mb-6">
@@ -160,7 +158,6 @@ export default async function Home() {
 				</div>
 			)}
 
-			{/* Recent Puzzles */}
 			<div className="space-y-6 mt-16">
 				<div className="text-center mb-6">
 					<h2 className="text-3xl font-bold text-white mb-2">Recent Puzzles</h2>

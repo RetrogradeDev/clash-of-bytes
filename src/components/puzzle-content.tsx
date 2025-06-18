@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+
 import { Editor } from "@monaco-editor/react";
+import ReactMarkdown from "react-markdown";
+
 import { submitSolution } from "@/lib/actions";
 import { executeCode, type TestResult } from "@/lib/code-execution";
-import ReactMarkdown from "react-markdown";
+
 import { Card } from "./card";
 
 type Language = "javascript" | "python";
@@ -212,7 +215,6 @@ export function PuzzleContent({
 				)}
 			</div>
 
-			{/* Results */}
 			{error && (
 				<div className="bg-red-900/50 border border-red-500/50 rounded-lg p-4">
 					<p className="text-red-200">{error}</p>

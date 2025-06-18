@@ -2,7 +2,7 @@
 - [x] Handle exec errors and stdout
 - [x] fix editor bounds
 - [ ] not only char challenges
-- [ ] refactor
+- [x] refactor
 - [ ] responsive
 - [x] logged out access
 - [x] make all pages like the profile (theme)

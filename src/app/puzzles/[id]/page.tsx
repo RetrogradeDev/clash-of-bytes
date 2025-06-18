@@ -1,15 +1,18 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import Link from "next/link";
+
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+
 import { PuzzleContent } from "@/components/puzzle-content";
 import { VoteButton } from "@/components/vote-button";
-import { formatDistanceToNow } from "date-fns";
-import ReactMarkdown from "react-markdown";
 import { PuzzleLeaderboard } from "@/components/puzzle-leaderboard";
 import { Card } from "@/components/card";
+
+import { formatDistanceToNow } from "date-fns";
 import { StarIcon } from "lucide-react";
-import Link from "next/link";
+import ReactMarkdown from "react-markdown";
 
 async function getPuzzle(id: string): Promise<PublicPuzzle> {
 	const puzzle = await prisma.puzzle.findUnique({
@@ -101,7 +104,6 @@ export default async function PuzzlePage({
 	}
 	return (
 		<div className="max-w-6xl mx-auto">
-			{/* Custom Header for Puzzle Page */}
 			<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20 mx-4 mt-8">
 				<div className="max-w-6xl mx-auto">
 					<div className="flex items-start justify-between">
@@ -144,7 +146,6 @@ export default async function PuzzlePage({
 			</div>
 
 			<div className="px-4 py-8 space-y-8">
-				{/* Description */}
 				<Card>
 					<h2 className="text-xl font-bold text-white mb-4">📝 Description</h2>
 					<div className="prose prose-invert max-w-none">
@@ -154,7 +155,6 @@ export default async function PuzzlePage({
 					</div>
 				</Card>
 
-				{/* Input/Output Format */}
 				<div className="grid md:grid-cols-2 gap-6">
 					<Card>
 						<h2 className="text-xl font-bold text-white mb-4">📥 Input</h2>
@@ -177,7 +177,6 @@ export default async function PuzzlePage({
 					</Card>
 				</div>
 
-				{/* Test Cases Preview */}
 				<Card>
 					<h2 className="text-xl font-bold text-white mb-4">
 						🧪 Sample Test Cases
@@ -216,7 +215,6 @@ export default async function PuzzlePage({
 				</Card>
 
 				<div className="grid lg:grid-cols-3 gap-8">
-					{/* Code Editor */}
 					<div className="lg:col-span-2">
 						<PuzzleContent
 							puzzle={puzzle}
@@ -225,7 +223,6 @@ export default async function PuzzlePage({
 						/>
 					</div>
 
-					{/* Leaderboard */}
 					<PuzzleLeaderboard
 						solutions={puzzle.solutions}
 						userSolutions={userSolutions}

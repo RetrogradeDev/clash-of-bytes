@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { signUp } from "@/lib/auth-client";
+
+import { useState } from "react";
 import { AtomIcon } from "lucide-react";
+
+import { signUp } from "@/lib/auth-client";
 
 export default function SignUpPage() {
 	const [username, setUsername] = useState("");
@@ -44,11 +46,11 @@ export default function SignUpPage() {
 			setIsLoading(false);
 		}
 	};
+
 	return (
 		<div className="max-w-3xl mx-auto p-6">
 			<div className="min-h-[70vh] flex items-center justify-center">
 				<div className="bg-gray-900/50 border border-gray-700 rounded-lg p-8 w-full max-w-md">
-					{/* Header Section */}
 					<div className="text-center mb-8">
 						<div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
 							<AtomIcon className="w-8 h-8 text-white" />
@@ -155,7 +157,7 @@ export default function SignUpPage() {
 								Sign in
 							</Link>
 						</p>
-					</div>{" "}
+					</div>
 				</div>
 			</div>
 		</div>

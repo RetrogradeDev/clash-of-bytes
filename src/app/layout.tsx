@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "Clash of Bytes - Code Golf Platform",
+	title: "Clash of Bytes - Programming Puzzles",
 	description: "Solve programming puzzles in as few characters as possible",
 };
 

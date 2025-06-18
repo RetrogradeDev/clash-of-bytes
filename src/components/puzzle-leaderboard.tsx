@@ -1,6 +1,8 @@
 "use client";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
 import { JavaScriptIcon } from "./icons/javascript";
 import { PythonIcon } from "./icons/python";
 import { Card } from "./card";
@@ -71,57 +73,51 @@ export function PuzzleLeaderboard({
 				</div>
 			)}
 			{filteredSolutions.length > 0 ? (
-				filteredSolutions
-					.slice(0, 10) // Limit to top 10 solutions
-					.map((solution, index) => (
-						<div
-							key={solution.id}
-							className={`flex items-center justify-between p-3 my-3 rounded-lg ${
-								solution.userId === session?.user?.id
-									? "bg-purple-900/40 border border-purple-500/50"
-									: "bg-gray-800/50 border border-gray-600"
-							}`}
-						>
-							<div className="flex items-center space-x-3">
-								<span className="text-white font-bold text-lg">
-									#{index + 1}
-								</span>
-								<div>
-									<Link
-										className="text-purple-400 hover:text-purple-300 font-semibold"
-										href={`/users/${solution.user.name}`}
-									>
-										@{solution.user.name}
-									</Link>
-								</div>
-							</div>
-							<div className="flex items-center space-x-4">
-								{filter === "all" && (
-									<div className="text-gray-400 text-sm">
-										{solution.language === "javascript" ? (
-											<JavaScriptIcon
-												strokeWidth={2}
-												fill="white"
-												className="w-6 h-6"
-											/>
-										) : (
-											<PythonIcon
-												strokeWidth={2}
-												fill="white"
-												className="w-6 h-6"
-											/>
-										)}
-									</div>
-								)}{" "}
-								<div className="text-right">
-									<div className="text-white font-bold">
-										{solution.charCount}
-									</div>
-									<div className="text-gray-400 text-xs">chars</div>
-								</div>
+				filteredSolutions.slice(0, 10).map((solution, index) => (
+					<div
+						key={solution.id}
+						className={`flex items-center justify-between p-3 my-3 rounded-lg ${
+							solution.userId === session?.user?.id
+								? "bg-purple-900/40 border border-purple-500/50"
+								: "bg-gray-800/50 border border-gray-600"
+						}`}
+					>
+						<div className="flex items-center space-x-3">
+							<span className="text-white font-bold text-lg">#{index + 1}</span>
+							<div>
+								<Link
+									className="text-purple-400 hover:text-purple-300 font-semibold"
+									href={`/users/${solution.user.name}`}
+								>
+									@{solution.user.name}
+								</Link>
 							</div>
 						</div>
-					))
+						<div className="flex items-center space-x-4">
+							{filter === "all" && (
+								<div className="text-gray-400 text-sm">
+									{solution.language === "javascript" ? (
+										<JavaScriptIcon
+											strokeWidth={2}
+											fill="white"
+											className="w-6 h-6"
+										/>
+									) : (
+										<PythonIcon
+											strokeWidth={2}
+											fill="white"
+											className="w-6 h-6"
+										/>
+									)}
+								</div>
+							)}{" "}
+							<div className="text-right">
+								<div className="text-white font-bold">{solution.charCount}</div>
+								<div className="text-gray-400 text-xs">chars</div>
+							</div>
+						</div>
+					</div>
+				))
 			) : (
 				<div className="text-center text-gray-400 py-4">
 					<div className="text-4xl mb-2">🎯</div>

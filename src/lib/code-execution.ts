@@ -62,7 +62,7 @@ async function executeJavaScript(
 ): Promise<[string, string]> {
 	return new Promise((resolve, reject) => {
 		try {
-			// Create a safe execution environment
+			// TODO: Find out how safe this is
 			const logs: string[] = [];
 			const originalConsoleLog = console.log;
 
@@ -73,7 +73,7 @@ async function executeJavaScript(
 			console.info = (...args) => logs.push("**INFO:** " + args.join(" "));
 
 			try {
-				const safeEval = new Function(
+				const func = new Function(
 					"input",
 					`
                     ${code}
@@ -86,7 +86,7 @@ async function executeJavaScript(
                   `,
 				);
 
-				let result = safeEval(input);
+				let result = func(input);
 				const stdout = logs.join("\n");
 
 				try {
@@ -114,7 +114,8 @@ async function executePython(
 	try {
 		// @ts-ignore
 		if (!window.pyodide) {
-			// Load Pyodide if not already loaded
+			// Load Pyodide if not already loaded. We have to do this like this because
+			// it's WASM and we can't import it like a normal module.
 			const script = document.createElement("script");
 			script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.js"; // TODO: 0.27.7 creates an error, idk
 			document.head.appendChild(script);
@@ -125,19 +126,23 @@ async function executePython(
 			});
 
 			// @ts-ignore
-			window.pyodide = await loadPyodide();
+			window.pyodide = await loadPyodide(); // This takes 2-3 seconds, so we should cache it
 		}
 
 		// @ts-ignore
 		const pyodide = window.pyodide;
 
 		// Fix the indentation in the code for in the try-block
+		// I hate python's indentation rules so much
+		// Like, why can't we just use braces like every other language?
+		// and why do we have to indent with spaces instead of tabs?
+		// I hate this so much
 		const fixedCode = code
 			.split("\n")
-			.map((line) => "    " + line)
+			.map((line) => "    " + line) // Assuming the user's code is indented with 4 spaces
 			.join("\n");
 
-		// Set up the Python environment
+		// Just for debugging, remove this var later
 		const full = `
 import sys
 from io import StringIO

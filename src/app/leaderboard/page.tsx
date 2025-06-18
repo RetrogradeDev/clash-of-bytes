@@ -4,6 +4,8 @@ import { TrophyIcon, StarIcon, CodeIcon, UsersIcon } from "lucide-react";
 import Link from "next/link";
 
 async function getLeaderboardData() {
+	const totalUsers = await prisma.user.count();
+
 	// Get top solvers by total number of solutions
 	const topSolvers = await prisma.user.findMany({
 		select: {
@@ -27,7 +29,7 @@ async function getLeaderboardData() {
 		take: 10,
 	});
 
-	// Get best solutions (shortest character count)
+	// Get best solutions
 	const bestSolutions = await prisma.solution.findMany({
 		select: {
 			charCount: true,
@@ -81,6 +83,7 @@ async function getLeaderboardData() {
 	});
 
 	return {
+		totalUsers,
 		topSolvers,
 		bestSolutions,
 		topPuzzles,
@@ -88,12 +91,12 @@ async function getLeaderboardData() {
 }
 
 export default async function LeaderboardPage() {
-	const { topSolvers, bestSolutions, topPuzzles } = await getLeaderboardData();
+	const { totalUsers, topSolvers, bestSolutions, topPuzzles } =
+		await getLeaderboardData();
 
 	return (
 		<div className="max-w-3xl mx-auto p-6">
 			<div className="space-y-8">
-				{/* Header Section */}
 				<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
 					<div className="text-center">
 						<div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -108,16 +111,13 @@ export default async function LeaderboardPage() {
 					</div>
 				</div>
 
-				{/* Stats Overview */}
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 						<h3 className="text-lg font-semibold text-white mb-2">
 							<UsersIcon className="inline w-5 h-5 mr-2" />
-							Active Solvers
+							Active Users
 						</h3>
-						<p className="text-3xl font-bold text-purple-400">
-							{topSolvers.length}
-						</p>
+						<p className="text-3xl font-bold text-purple-400">{totalUsers}</p>
 					</div>
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 						<h3 className="text-lg font-semibold text-white mb-2">
@@ -139,7 +139,6 @@ export default async function LeaderboardPage() {
 					</div>
 				</div>
 
-				{/* Top Solvers */}
 				<div className="space-y-6">
 					<h2 className="text-2xl font-bold text-white">🚀 Top Solvers</h2>{" "}
 					<div className="space-y-4">
@@ -194,7 +193,6 @@ export default async function LeaderboardPage() {
 					</div>
 				</div>
 
-				{/* Best Solutions */}
 				<div className="space-y-6">
 					<h2 className="text-2xl font-bold text-white">
 						⚡ Shortest Solutions
@@ -234,7 +232,6 @@ export default async function LeaderboardPage() {
 					</div>
 				</div>
 
-				{/* Most Voted Puzzles */}
 				<div className="space-y-6">
 					<h2 className="text-2xl font-bold text-white">
 						⭐ Community Favorites
