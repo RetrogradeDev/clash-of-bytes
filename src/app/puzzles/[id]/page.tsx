@@ -60,18 +60,16 @@ async function getUserVote(puzzleId: string, userId?: string) {
 	});
 }
 
-async function getUserSolution(
+async function getUserSolutions(
 	puzzleId: string,
 	userId?: string,
-): Promise<Solution | null> {
+): Promise<Solution[] | null> {
 	if (!userId) return null;
 
-	return await prisma.solution.findUnique({
+	return await prisma.solution.findMany({
 		where: {
-			puzzleId_userId: {
-				puzzleId,
-				userId,
-			},
+			puzzleId,
+			userId,
 		},
 	});
 }
@@ -91,10 +89,15 @@ export default async function PuzzlePage({
 		headers: await headers(),
 	});
 
-	const [userVote, userSolution] = await Promise.all([
+	const [userVote, userSolutions] = await Promise.all([
 		getUserVote(puzzle.id, session?.user?.id),
-		getUserSolution(puzzle.id, session?.user?.id),
+		getUserSolutions(puzzle.id, session?.user?.id),
 	]);
+
+	if (userSolutions && userSolutions.length > 2) {
+		// Somehow the user submitted solutions for 3+ languages, while we only have 2
+		userSolutions.splice(2);
+	}
 
 	return (
 		<div className="max-w-6xl mx-auto space-y-8">
@@ -209,7 +212,7 @@ export default async function PuzzlePage({
 				<div className="lg:col-span-2">
 					<PuzzleContent
 						puzzle={puzzle}
-						userSolution={userSolution}
+						userSolutions={userSolutions}
 						isAuthenticated={!!session}
 					/>
 				</div>
@@ -217,7 +220,7 @@ export default async function PuzzlePage({
 				{/* Leaderboard */}
 				<PuzzleLeaderboard
 					solutions={puzzle.solutions}
-					userSolution={userSolution}
+					userSolutions={userSolutions}
 					session={session}
 				/>
 			</div>

@@ -170,12 +170,13 @@ export async function submitSolution(data: {
 			return { success: false, error: "Puzzle not found" };
 		}
 
-		// Check if user already has a solution for this puzzle
+		// Check if user already has a solution for this puzzle and language
 		const existingSolution = await prisma.solution.findUnique({
 			where: {
-				puzzleId_userId: {
-					puzzleId: data.puzzleId,
+				puzzleId_userId_language: {
+					puzzleId: puzzle.id,
 					userId: session.user.id,
+					language: data.language,
 				},
 			},
 		});

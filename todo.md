@@ -4,6 +4,7 @@
 - [ ] not only char challenges
 - [ ] refactor
 - [ ] responsive
-- [ ] logged out access
+- [x] logged out access
 - [ ] make all pages like the profile (theme)
-- [ ] support both python and js solutions
+- [x] support both python and js solutions
+- [ ] test leaderboards better with a lot of users

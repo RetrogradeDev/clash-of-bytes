@@ -6,11 +6,11 @@ import { PythonIcon } from "./icons/python";
 
 export function PuzzleLeaderboard({
 	solutions,
-	userSolution,
+	userSolutions,
 	session,
 }: {
 	solutions: Solution[];
-	userSolution?: Solution | null;
+	userSolutions?: Solution[] | null;
 	session: {
 		user: {
 			id: string;
@@ -31,12 +31,14 @@ export function PuzzleLeaderboard({
 	}, [filter, solutions]);
 
 	useEffect(() => {
-		if (userSolution) {
+		if (userSolutions) {
 			const rank =
-				filteredSolutions.findIndex((s) => s.id === userSolution.id) + 1;
+				filteredSolutions.findIndex((s) => {
+					return userSolutions?.some((us) => us.id === s.id);
+				}) + 1;
 			setUserRank(rank > 0 ? rank : null);
 		}
-	}, [userSolution, filteredSolutions]);
+	}, [userSolutions, filteredSolutions]);
 
 	return (
 		<div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg p-6">
@@ -56,12 +58,12 @@ export function PuzzleLeaderboard({
 				</select>
 			</div>
 
-			{userSolution && userRank && (
+			{userSolutions && userRank && (
 				<div className="bg-purple-900/50 border border-purple-500/50 rounded-lg p-3 mb-4">
 					<div className="text-center">
 						<div className="text-purple-300 text-sm">Your Best</div>
 						<div className="text-white font-bold text-lg">
-							{userSolution.charCount} chars
+							{filteredSolutions[userRank - 1]?.charCount || "N/A"}
 						</div>
 						<div className="text-purple-300 text-sm">Rank #{userRank}</div>
 					</div>
@@ -73,7 +75,7 @@ export function PuzzleLeaderboard({
 					.map((solution, index) => (
 						<div
 							key={solution.id}
-							className={`flex items-center justify-between p-3 rounded-lg ${
+							className={`flex items-center justify-between p-3 my-3 rounded-lg ${
 								solution.userId === session?.user?.id
 									? "bg-purple-900/50 border border-purple-500/50"
 									: "bg-white/5"

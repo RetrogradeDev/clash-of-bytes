@@ -83,7 +83,7 @@ model Solution {
   puzzle Puzzle @relation(references: [id], fields: [puzzleId], onDelete: Cascade)
   user   User   @relation(references: [id], fields: [userId], onDelete: Cascade)
 
-  @@unique([puzzleId, userId])
+  @@unique([puzzleId, userId, language])
   @@map("solutions")
 }
 

@@ -13,24 +13,20 @@ interface PuzzleContentProps {
 		id: string;
 		testCases: any;
 	};
-	userSolution?: {
-		code: string;
-		language: string;
-		charCount: number;
-	} | null;
+	userSolutions?: Solution[] | null;
 	isAuthenticated: boolean;
 }
 
 export function PuzzleContent({
 	puzzle,
-	userSolution,
+	userSolutions,
 	isAuthenticated,
 }: PuzzleContentProps) {
 	const [language, setLanguage] = useState<Language>(
-		(userSolution?.language as Language) || "javascript",
+		(userSolutions?.[0]?.language as Language) || "javascript",
 	);
 	const [code, setCode] = useState(
-		userSolution?.code ||
+		userSolutions?.[0]?.code ||
 			(language === "javascript"
 				? "// Your solution here\nfunction solve(inputData) {\n  // Parse input and return output\n}"
 				: "# Your solution here\ndef solve(input_data):\n    # Parse input and return output\n    pass"),
