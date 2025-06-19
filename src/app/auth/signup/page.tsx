@@ -22,6 +22,26 @@ export default function SignUpPage() {
 		setIsLoading(true);
 		setError("");
 
+		if (!username || !email || !password || !confirmPassword) {
+			setError("All fields are required");
+			setIsLoading(false);
+			return;
+		}
+
+		if (username.length < 3 || username.length > 20) {
+			setError("Username must be between 3 and 20 characters");
+			setIsLoading(false);
+			return;
+		}
+
+		if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
+			setError(
+				"Username can only contain letters, numbers, dots, underscores, and hyphens",
+			);
+			setIsLoading(false);
+			return;
+		}
+
 		if (password !== confirmPassword) {
 			setError("Passwords do not match");
 			setIsLoading(false);

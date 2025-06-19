@@ -2,6 +2,7 @@ type PublicPuzzle = {
 	id: string;
 	title: string;
 	description: string;
+	mode: "chars" | "runtime";
 	createdAt: Date;
 	author: {
 		name: string;
@@ -24,7 +25,7 @@ type Solution = {
 	user: {
 		name: string;
 	};
-	charCount: number;
+	score: number;
 };
 
 type InputOutputFormat =

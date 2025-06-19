@@ -66,7 +66,7 @@ export function PuzzleLeaderboard({
 					<div className="text-center">
 						<div className="text-purple-300 text-sm">Your Best</div>
 						<div className="text-white font-bold text-lg">
-							{filteredSolutions[userRank - 1]?.charCount || "N/A"}
+							{filteredSolutions[userRank - 1]?.score || "N/A"}
 						</div>
 						<div className="text-purple-300 text-sm">Rank #{userRank}</div>
 					</div>
@@ -112,8 +112,7 @@ export function PuzzleLeaderboard({
 								</div>
 							)}{" "}
 							<div className="text-right">
-								<div className="text-white font-bold">{solution.charCount}</div>
-								<div className="text-gray-400 text-xs">chars</div>
+								<div className="text-white font-bold">{solution.score}</div>
 							</div>
 						</div>
 					</div>

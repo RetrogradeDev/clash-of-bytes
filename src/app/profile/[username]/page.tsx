@@ -15,6 +15,7 @@ async function getUserData(username: string): Promise<{
 	createdAt: Date;
 	puzzles: {
 		id: string;
+		mode: string; //"chars" | "runtime";
 		title: string;
 		description: string;
 		createdAt: Date;
@@ -22,7 +23,7 @@ async function getUserData(username: string): Promise<{
 			id: string;
 		}[];
 		solutions: {
-			charCount: number;
+			score: number;
 			user: {
 				name: string;
 			};
@@ -41,9 +42,10 @@ async function getUserData(username: string): Promise<{
 					description: true,
 					createdAt: true,
 					votes: true,
+					mode: true,
 					solutions: {
 						select: {
-							charCount: true,
+							score: true,
 							user: {
 								select: {
 									name: true,
@@ -51,13 +53,14 @@ async function getUserData(username: string): Promise<{
 							},
 						},
 						orderBy: {
-							charCount: "asc",
+							score: "asc",
 						},
 					},
 				},
 			},
 		},
 	});
+
 	return user;
 }
 
@@ -120,7 +123,7 @@ export default async function ProfilePage({
 							<p className="text-3xl font-bold text-green-400">
 								{Math.min(
 									...user.puzzles.flatMap((p) =>
-										p.solutions.map((s) => s.charCount),
+										p.solutions.map((s) => s.score),
 									),
 								) || 0}
 							</p>
@@ -171,9 +174,9 @@ export default async function ProfilePage({
 													<TrophyIcon className="size-4 mr-1" />
 													Best:{" "}
 													{Math.min(
-														...puzzle.solutions.map((s) => s.charCount),
+														...puzzle.solutions.map((s) => s.score),
 													)}{" "}
-													chars
+													{puzzle.mode === "chars" ? "chars" : "ms"}
 												</span>
 											)}
 										</div>

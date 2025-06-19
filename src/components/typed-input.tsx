@@ -37,6 +37,9 @@ function ArrayInput(props: {
 				onClick={() => {
 					setValues([...values, ""]);
 				}}
+				type="button"
+				title="Add another value"
+				aria-label="Add another value"
 			>
 				+ Add
 			</button>
@@ -62,6 +65,8 @@ function ArrayInput(props: {
 								}
 								setValues(values.filter((_, i) => i !== index));
 							}}
+							type="button"
+							title="Remove this value"
 						>
 							<TrashIcon className="w-4 h-4" />
 						</button>

@@ -5,6 +5,7 @@ import Link from "next/link";
 
 async function getLeaderboardData() {
 	const totalUsers = await prisma.user.count();
+	const totalPuzzles = await prisma.puzzle.count();
 
 	// Get top solvers by total number of solutions
 	const topSolvers = await prisma.user.findMany({
@@ -12,7 +13,7 @@ async function getLeaderboardData() {
 			name: true,
 			solutions: {
 				select: {
-					charCount: true,
+					score: true,
 					puzzle: {
 						select: {
 							title: true,
@@ -29,28 +30,6 @@ async function getLeaderboardData() {
 		take: 10,
 	});
 
-	// Get best solutions
-	const bestSolutions = await prisma.solution.findMany({
-		select: {
-			charCount: true,
-			user: {
-				select: {
-					name: true,
-				},
-			},
-			puzzle: {
-				select: {
-					id: true,
-					title: true,
-				},
-			},
-		},
-		orderBy: {
-			charCount: "asc",
-		},
-		take: 10,
-	});
-
 	// Get most voted puzzles
 	const topPuzzles = await prisma.puzzle.findMany({
 		select: {
@@ -58,6 +37,7 @@ async function getLeaderboardData() {
 			title: true,
 			description: true,
 			createdAt: true,
+			mode: true,
 			author: {
 				select: {
 					name: true,
@@ -66,10 +46,10 @@ async function getLeaderboardData() {
 			votes: true,
 			solutions: {
 				select: {
-					charCount: true,
+					score: true,
 				},
 				orderBy: {
-					charCount: "asc",
+					score: "asc",
 				},
 				take: 1,
 			},
@@ -84,14 +64,14 @@ async function getLeaderboardData() {
 
 	return {
 		totalUsers,
+		totalPuzzles,
 		topSolvers,
-		bestSolutions,
 		topPuzzles,
 	};
 }
 
 export default async function LeaderboardPage() {
-	const { totalUsers, topSolvers, bestSolutions, topPuzzles } =
+	const { totalUsers, totalPuzzles, topSolvers, topPuzzles } =
 		await getLeaderboardData();
 
 	return (
@@ -122,11 +102,9 @@ export default async function LeaderboardPage() {
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 						<h3 className="text-lg font-semibold text-white mb-2">
 							<CodeIcon className="inline w-5 h-5 mr-2" />
-							Best Score
+							Total Puzzles
 						</h3>
-						<p className="text-3xl font-bold text-green-400">
-							{bestSolutions[0]?.charCount || 0} chars
-						</p>
+						<p className="text-3xl font-bold text-blue-400">{totalPuzzles}</p>
 					</div>
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700">
 						<h3 className="text-lg font-semibold text-white mb-2">
@@ -179,11 +157,8 @@ export default async function LeaderboardPage() {
 									<div className="text-right">
 										<p className="text-purple-400 font-semibold">
 											{solver.solutions.length > 0
-												? Math.min(
-														...solver.solutions.map((s: any) => s.charCount),
-												  )
-												: 0}{" "}
-											chars
+												? Math.min(...solver.solutions.map((s: any) => s.score))
+												: 0}
 										</p>
 										<p className="text-gray-400 text-sm">best score</p>
 									</div>
@@ -195,47 +170,8 @@ export default async function LeaderboardPage() {
 
 				<div className="space-y-6">
 					<h2 className="text-2xl font-bold text-white">
-						⚡ Shortest Solutions
-					</h2>{" "}
-					<div className="space-y-4">
-						{bestSolutions.map((solution: any, index: number) => (
-							<Link
-								href={`/puzzles/${solution.puzzle.id}`}
-								key={`${solution.puzzle.id}-${solution.user.name}`}
-								className="bg-gray-900/30 rounded-lg p-6 border border-gray-700 hover:border-green-500/50 transition-colors block"
-							>
-								<div className="flex items-center justify-between">
-									<div className="flex items-center space-x-4">
-										<div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
-											<span className="text-white font-bold text-sm">
-												{index + 1}
-											</span>
-										</div>
-										<div>
-											<h3 className="text-lg font-semibold text-white">
-												{solution.puzzle.title}
-											</h3>
-											<p className="text-gray-300 text-sm">
-												by {solution.user.name}
-											</p>
-										</div>
-									</div>
-									<div className="text-right">
-										<p className="text-green-400 font-bold text-xl">
-											{solution.charCount}
-										</p>
-										<p className="text-gray-400 text-sm">characters</p>
-									</div>
-								</div>
-							</Link>
-						))}
-					</div>
-				</div>
-
-				<div className="space-y-6">
-					<h2 className="text-2xl font-bold text-white">
 						⭐ Community Favorites
-					</h2>{" "}
+					</h2>
 					<div className="space-y-4">
 						{topPuzzles.map((puzzle: any, index: number) => (
 							<Link
@@ -277,7 +213,8 @@ export default async function LeaderboardPage() {
 									{puzzle.solutions.length > 0 && (
 										<span className="text-green-300 flex items-center">
 											<TrophyIcon className="w-4 h-4 mr-1" />
-											Best: {puzzle.solutions[0].charCount} chars
+											Best: {puzzle.solutions[0].score}{" "}
+											{puzzle.mode === "chars" ? "chars" : "ms"}
 										</span>
 									)}
 								</div>

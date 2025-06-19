@@ -62,7 +62,8 @@ async function executeJavaScript(
 ): Promise<[string, string]> {
 	return new Promise((resolve, reject) => {
 		try {
-			// TODO: Find out how safe this is
+			// This is not safe, so the user should only be able to run their own code
+
 			const logs: string[] = [];
 			const originalConsoleLog = console.log;
 

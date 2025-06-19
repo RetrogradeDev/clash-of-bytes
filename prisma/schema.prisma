@@ -51,6 +51,7 @@ model Puzzle {
   id           String    @id @default(cuid())
   title        String
   description  String // Markdown
+  mode         String // chars, runs, keys
 
   inputFormat  String
   outputFormat String
@@ -77,7 +78,7 @@ model Solution {
   id        String   @id @default(cuid())
   code      String
   language  String // 'javascript' or 'python'
-  charCount Int
+  score     Int    // lower is better
   createdAt DateTime @default(now())
 
   puzzleId  String

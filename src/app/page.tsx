@@ -16,7 +16,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 			author: true,
 			solutions: {
 				select: {
-					charCount: true,
+					score: true,
 					user: {
 						select: {
 							name: true,
@@ -24,7 +24,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 					},
 				},
 				orderBy: {
-					charCount: "asc",
+					score: "asc",
 				},
 				take: 1,
 			},
@@ -48,7 +48,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 				author: true,
 				solutions: {
 					select: {
-						charCount: true,
+						score: true,
 						user: {
 							select: {
 								name: true,
@@ -56,7 +56,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 						},
 					},
 					orderBy: {
-						charCount: "asc",
+						score: "asc",
 					},
 					take: 1,
 				},
@@ -89,7 +89,7 @@ async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 			author: true,
 			solutions: {
 				select: {
-					charCount: true,
+					score: true,
 					user: {
 						select: {
 							name: true,
@@ -97,7 +97,7 @@ async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 					},
 				},
 				orderBy: {
-					charCount: "asc",
+					score: "asc",
 				},
 				take: 1,
 			},

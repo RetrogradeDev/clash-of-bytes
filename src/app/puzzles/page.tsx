@@ -24,7 +24,7 @@ async function getPuzzles(searchTerm?: string) {
 			author: true,
 			solutions: {
 				select: {
-					charCount: true,
+					score: true,
 					user: {
 						select: {
 							name: true,
@@ -32,7 +32,7 @@ async function getPuzzles(searchTerm?: string) {
 					},
 				},
 				orderBy: {
-					charCount: "asc",
+					score: "asc",
 				},
 				take: 1,
 			},

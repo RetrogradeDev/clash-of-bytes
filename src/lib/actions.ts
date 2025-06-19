@@ -3,9 +3,11 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { secureJsEval, securePyEval } from "./secure-eval";
 
 export async function createPuzzle(data: {
 	title: string;
+	mode: "chars" | "runtime";
 	description: string;
 	inputFormat: string;
 	outputFormat: string;
@@ -23,6 +25,10 @@ export async function createPuzzle(data: {
 				success: false,
 				error: "You must be logged in to create a puzzle",
 			};
+		}
+
+		if (["chars", "runtime"].indexOf(data.mode) === -1) {
+			return { success: false, error: "Invalid puzzle mode" };
 		}
 
 		if (!data.title.trim()) {
@@ -67,6 +73,7 @@ export async function createPuzzle(data: {
 		const puzzle = await prisma.puzzle.create({
 			data: {
 				title: data.title.trim(),
+				mode: data.mode,
 				description: data.description.trim(),
 				inputFormat: data.inputFormat.trim(),
 				outputFormat: data.outputFormat.trim(),
@@ -130,6 +137,35 @@ export async function votePuzzle(puzzleId: string) {
 	}
 }
 
+async function calculateScore(code: string, language: string, mode: string) {
+	if (mode === "chars") {
+		// For character count mode, score is simply the length of the code
+		return code.length;
+	}
+
+	if (mode === "runtime") {
+		// For runtime mode, we need to measure the execution time
+		const loops = 5; // Number of loops to average the time
+		const start = performance.now();
+		for (let i = 0; i < loops; i++) {
+			try {
+				if (language === "javascript") {
+					// Use secure JS eval to run the code
+					await secureJsEval(code);
+				} else if (language === "python") {
+					await securePyEval(code);
+				}
+			} catch (error) {
+				console.error("Error executing code:", error);
+			}
+		}
+		const end = performance.now();
+		return (end - start) / loops;
+	}
+
+	return -1; // Invalid mode
+}
+
 export async function submitSolution(data: {
 	puzzleId: string;
 	code: string;
@@ -174,25 +210,29 @@ export async function submitSolution(data: {
 			},
 		});
 
-		const charCount = data.code.length;
+		const score = await calculateScore(
+			data.code.trim(),
+			data.language,
+			puzzle.mode,
+		);
 
 		if (existingSolution) {
 			// Update existing solution if this one is shorter
-			if (charCount < existingSolution.charCount) {
+			if (score < existingSolution.score) {
 				await prisma.solution.update({
 					where: { id: existingSolution.id },
 					data: {
 						code: data.code.trim(),
-						charCount,
+						score,
 						language: data.language,
 					},
 				});
-				return { success: true, improved: true, charCount };
+				return { success: true, improved: true, score };
 			} else {
 				return {
 					success: true,
 					improved: false,
-					charCount: existingSolution.charCount,
+					score: existingSolution.score,
 				};
 			}
 		} else {
@@ -201,12 +241,12 @@ export async function submitSolution(data: {
 				data: {
 					code: data.code.trim(),
 					language: data.language,
-					charCount,
+					score,
 					puzzleId: data.puzzleId,
 					userId: session.user.id,
 				},
 			});
-			return { success: true, improved: true, charCount };
+			return { success: true, improved: true, score };
 		}
 	} catch (error) {
 		console.error("Error submitting solution:", error);

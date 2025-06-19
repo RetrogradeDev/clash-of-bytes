@@ -26,6 +26,9 @@ const inputOutputFormats: InputOutputFormat[] = [
 	"boolean[]",
 ];
 
+type Mode = "chars" | "runtime";
+const modes: Mode[] = ["chars", "runtime"];
+
 interface TestCase {
 	input: string;
 	output: string;
@@ -36,6 +39,7 @@ export default function SubmitPuzzlePage() {
 	const router = useRouter();
 
 	const [title, setTitle] = useState("");
+	const [mode, setMode] = useState<Mode>("chars");
 	const [description, setDescription] = useState("");
 	const [inputFormat, setInputFormat] = useState<InputOutputFormat>("string");
 	const [outputFormat, setOutputFormat] = useState<InputOutputFormat>("string");
@@ -89,6 +93,8 @@ export default function SubmitPuzzlePage() {
 			i === index ? { ...testCase, [field]: value } : testCase,
 		);
 		setTestCases(updated);
+
+		console.log("here");
 	};
 
 	const validateForm = () => {
@@ -140,6 +146,7 @@ export default function SubmitPuzzlePage() {
 
 			const result = await createPuzzle({
 				title: censor(title.trim()),
+				mode,
 				description: censor(description.trim()),
 				inputFormat: censor(inputFormat.trim()),
 				outputFormat: censor(outputFormat.trim()),
@@ -174,8 +181,8 @@ export default function SubmitPuzzlePage() {
 							Create a programming challenge for the community
 						</p>
 					</div>
-				</div>{" "}
-				<form onSubmit={handleSubmit} className="space-y-8">
+				</div>
+				<form className="space-y-8">
 					<div className="bg-gray-900/50 rounded-lg p-6 border border-gray-700 space-y-6">
 						<h2 className="text-2xl font-bold text-white">Basic Information</h2>
 
@@ -194,6 +201,32 @@ export default function SubmitPuzzlePage() {
 								placeholder="e.g., Reverse a String"
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 							/>
+						</div>
+
+						<div>
+							<label
+								htmlFor="mode"
+								className="block text-sm font-medium text-white mb-2"
+							>
+								Mode *
+							</label>
+							<select
+								id="mode"
+								value={mode}
+								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
+								onChange={(e) => setMode(e.target.value as Mode)}
+							>
+								<option key="chars" value="chars">
+									Least Chars
+								</option>
+								<option
+									className="opacity-50 italic"
+									key="runtime"
+									value="runtime"
+								>
+									Runtime (JavaScript only)
+								</option>
+							</select>
 						</div>
 
 						<div>
@@ -381,6 +414,7 @@ export default function SubmitPuzzlePage() {
 						<button
 							type="submit"
 							disabled={isLoading}
+							onClick={handleSubmit}
 							className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-600/50 text-white px-8 py-3 rounded-lg font-semibold transition-colors"
 						>
 							{isLoading ? "Creating Puzzle..." : "Create Puzzle"}

@@ -1,7 +1,7 @@
 - [x] Fix dropdown colors
 - [x] Handle exec errors and stdout
 - [x] fix editor bounds
-- [ ] not only char challenges
+- [ ] not only char challenges (run time)
 - [x] refactor
 - [x] responsive
 - [x] logged out access

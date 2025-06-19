@@ -33,7 +33,7 @@ async function getPuzzle(id: string): Promise<PublicPuzzle> {
 					},
 				},
 				orderBy: {
-					charCount: "asc",
+					score: "asc",
 				},
 			},
 			votes: {

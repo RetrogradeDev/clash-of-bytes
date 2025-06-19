@@ -12,11 +12,12 @@ type PuzzleWithDetails = {
 	title: string;
 	description: string;
 	createdAt: Date;
+	mode: "chars" | "runtime";
 	author: {
 		name: string;
 	};
 	solutions: Array<{
-		charCount: number;
+		score: number;
 		user: {
 			name: string;
 		};
@@ -80,7 +81,10 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 						{bestSolution && (
 							<span className="flex items-center space-x-1 text-green-300">
 								<TrophyIcon className="w-4 h-4" strokeWidth={2} />
-								<span>{bestSolution.charCount} chars</span>
+								<span>
+									{bestSolution.score}{" "}
+									{puzzle.mode === "chars" ? "chars" : "ms"}
+								</span>
 							</span>
 						)}
 					</div>

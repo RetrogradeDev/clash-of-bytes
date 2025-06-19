@@ -15,6 +15,7 @@ type Language = "javascript" | "python";
 interface PuzzleContentProps {
 	puzzle: {
 		id: string;
+		mode: "chars" | "runtime";
 		testCases: any;
 	};
 	userSolutions?: Solution[] | null;
@@ -137,7 +138,7 @@ export function PuzzleContent({
 			if (result.success) {
 				if (result.improved) {
 					setSuccess(
-						`Solution submitted! Your code: ${result.charCount} characters 🎯`,
+						`Solution submitted! Your code: ${result.score} characters 🎯`,
 					);
 
 					// TODO: Update UI to show new solution
@@ -145,7 +146,9 @@ export function PuzzleContent({
 					window.location.reload();
 				} else {
 					setSuccess(
-						`Your previous solution (${result.charCount} chars) is still better!`,
+						`Your previous solution (${result.score} ${
+							puzzle.mode === "chars" ? "characters" : "milliseconds"
+						}) is still better!`,
 					);
 				}
 			} else {
@@ -158,13 +161,15 @@ export function PuzzleContent({
 		}
 	};
 
-	const charCount = code.length;
+	const score = code.length;
 	return (
 		<Card className="space-y-6">
 			<div className="flex items-center justify-between">
 				<h2 className="text-xl font-bold text-white">💻 Code Editor</h2>
 				<div className="flex items-center space-x-4">
-					<span className="text-gray-400 text-sm">{charCount} characters</span>
+					<span className="text-gray-400 text-sm">
+						{puzzle.mode === "chars" && `${code.length} characters`}
+					</span>
 					<select
 						value={language}
 						onChange={(e) => handleLanguageChange(e.target.value as Language)}
