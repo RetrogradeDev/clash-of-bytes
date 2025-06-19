@@ -110,7 +110,7 @@ export function PuzzleLeaderboard({
 										/>
 									)}
 								</div>
-							)}{" "}
+							)}
 							<div className="text-right">
 								<div className="text-white font-bold">{solution.score}</div>
 							</div>

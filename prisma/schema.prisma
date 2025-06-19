@@ -77,8 +77,8 @@ model Puzzle {
 model Solution {
   id        String   @id @default(cuid())
   code      String
-  language  String // 'javascript' or 'python'
-  score     Int    // lower is better
+  language  String   // 'javascript' or 'python'
+  score     Float    // lower is better
   createdAt DateTime @default(now())
 
   puzzleId  String

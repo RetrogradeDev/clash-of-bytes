@@ -2,7 +2,7 @@ type PublicPuzzle = {
 	id: string;
 	title: string;
 	description: string;
-	mode: "chars" | "runtime";
+	mode: string; // "chars" | "runtime";
 	createdAt: Date;
 	author: {
 		name: string;
@@ -21,7 +21,7 @@ type Solution = {
 	id: string;
 	code: string;
 	userId: string;
-	language: "python" | "javascript";
+	language: string; // "python" | "javascript";
 	user: {
 		name: string;
 	};

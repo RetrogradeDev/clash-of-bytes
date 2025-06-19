@@ -5,8 +5,9 @@ export interface TestResult {
 	input: string;
 	expected: string;
 	actual: string;
-	error?: string;
+	error?: string | null;
 	output: string;
+	time?: number; // Optional, for performance tracking
 }
 
 export async function executeCode(

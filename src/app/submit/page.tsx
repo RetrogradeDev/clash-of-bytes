@@ -27,7 +27,7 @@ const inputOutputFormats: InputOutputFormat[] = [
 ];
 
 type Mode = "chars" | "runtime";
-const modes: Mode[] = ["chars", "runtime"];
+const modes: Mode[] = ["runtime", "chars"];
 
 interface TestCase {
 	input: string;
@@ -39,7 +39,7 @@ export default function SubmitPuzzlePage() {
 	const router = useRouter();
 
 	const [title, setTitle] = useState("");
-	const [mode, setMode] = useState<Mode>("chars");
+	const [mode, setMode] = useState<Mode>("runtime");
 	const [description, setDescription] = useState("");
 	const [inputFormat, setInputFormat] = useState<InputOutputFormat>("string");
 	const [outputFormat, setOutputFormat] = useState<InputOutputFormat>("string");
@@ -93,8 +93,6 @@ export default function SubmitPuzzlePage() {
 			i === index ? { ...testCase, [field]: value } : testCase,
 		);
 		setTestCases(updated);
-
-		console.log("here");
 	};
 
 	const validateForm = () => {
@@ -216,16 +214,11 @@ export default function SubmitPuzzlePage() {
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								onChange={(e) => setMode(e.target.value as Mode)}
 							>
-								<option key="chars" value="chars">
-									Least Chars
-								</option>
-								<option
-									className="opacity-50 italic"
-									key="runtime"
-									value="runtime"
-								>
-									Runtime (JavaScript only)
-								</option>
+								{modes.map((mode) => (
+									<option key={mode} value={mode}>
+										{mode.charAt(0).toUpperCase() + mode.slice(1)}
+									</option>
+								))}
 							</select>
 						</div>
 

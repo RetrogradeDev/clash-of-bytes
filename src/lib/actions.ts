@@ -137,33 +137,105 @@ export async function votePuzzle(puzzleId: string) {
 	}
 }
 
-async function calculateScore(code: string, language: string, mode: string) {
-	if (mode === "chars") {
-		// For character count mode, score is simply the length of the code
-		return code.length;
-	}
+async function calculateScore(
+	code: string,
+	language: string,
+	benchruns: number = 1,
+): Promise<[number, string, string]> {
+	// For runtime mode, we need to measure the execution time
+	let stdout: string = "";
+	let stderr: string = "";
+	let times: number[] = [];
 
-	if (mode === "runtime") {
-		// For runtime mode, we need to measure the execution time
-		const loops = 5; // Number of loops to average the time
-		const start = performance.now();
-		for (let i = 0; i < loops; i++) {
-			try {
-				if (language === "javascript") {
-					// Use secure JS eval to run the code
-					await secureJsEval(code);
-				} else if (language === "python") {
-					await securePyEval(code);
-				}
-			} catch (error) {
-				console.error("Error executing code:", error);
+	const promises = Array.from({ length: benchruns }, async () => {
+		try {
+			if (language === "javascript") {
+				const [execTime, execStdout, execStderr] = await secureJsEval(code);
+				return { time: execTime, stdout: execStdout, stderr: execStderr };
+			} else if (language === "python") {
+				const [execTime, execStdout, execStderr] = await securePyEval(code);
+				return { time: execTime, stdout: execStdout, stderr: execStderr };
 			}
+
+			return { time: 0, stdout: "", stderr: "" };
+		} catch (error) {
+			console.error("Error executing code:", error);
+			return { time: 0, stdout: "", stderr: "" };
 		}
-		const end = performance.now();
-		return (end - start) / loops;
+	});
+
+	const results = await Promise.all(promises);
+
+	for (const result of results) {
+		times.push(result.time);
+		if (result.stdout) stdout = result.stdout;
+		if (result.stderr) stderr = result.stderr;
 	}
 
-	return -1; // Invalid mode
+	const sortedTimes = times.sort((a, b) => a - b);
+	sortedTimes.splice(0, 1); // Remove the fastest time
+	sortedTimes.splice(sortedTimes.length - 1, 2); // Remove the two slowest times
+
+	const totalTime =
+		sortedTimes.reduce((acc, t) => acc + t, 0) / sortedTimes.length;
+
+	return [totalTime, stdout, stderr];
+}
+
+export async function runTestCases(data: {
+	code: string;
+	language: string;
+	testCases: Array<{ input: string; output: string }>;
+	bench: boolean;
+}) {
+	try {
+		const results = [];
+
+		const testCasePromises = data.testCases.map(async (testCase) => {
+			if (!testCase.input.trim() || !testCase.output.trim()) {
+				return null;
+			}
+
+			const finalCode = `
+${data.code}
+
+${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+solve("${
+				testCase.input
+			}"))`;
+
+			const [time, stdout, stderr] = await calculateScore(
+				finalCode,
+				data.language,
+				data.bench ? 5 : 1, // Run multiple times if benchmarking
+			);
+
+			const resolvedOutput =
+				stdout
+					.split("\n")
+					.find((line) => line.startsWith("_OUTPUT$"))
+					?.replace(/_OUTPUT\$(.*)/, "$1")
+					.trim() || "";
+			const output = stdout.replace(/_OUTPUT\$.*/, "").trim();
+
+			return {
+				passed: resolvedOutput === testCase.output.trim(),
+				input: testCase.input,
+				expected: testCase.output,
+				actual: resolvedOutput,
+				output,
+				error: stderr || null,
+				time: Math.round(time * 1000) / 1000, // Round to 1ns
+			};
+		});
+
+		const testResults = await Promise.all(testCasePromises);
+		results.push(...testResults.filter((result) => result !== null));
+
+		return { success: true, results };
+	} catch (error) {
+		console.error("Error running code:", error);
+		return { success: false, error: "Failed to run code" };
+	}
 }
 
 export async function submitSolution(data: {
@@ -210,11 +282,29 @@ export async function submitSolution(data: {
 			},
 		});
 
-		const score = await calculateScore(
-			data.code.trim(),
-			data.language,
-			puzzle.mode,
-		);
+		// Run test cases and calculate score
+		const result = await runTestCases({
+			code: data.code,
+			language: data.language,
+			testCases: puzzle.testCases as Array<{ input: string; output: string }>,
+			bench: puzzle.mode === "runtime",
+		});
+
+		if (!result.success || !result.results) {
+			return { success: false, error: "Failed to run test cases" };
+		}
+
+		if (result.results.some((r) => !r.passed)) {
+			return {
+				success: false,
+				error: "Test cases failed",
+			};
+		}
+
+		const score =
+			puzzle.mode === "chars"
+				? data.code.trim().length
+				: result.results.reduce((acc, r) => acc + r.time, 0);
 
 		if (existingSolution) {
 			// Update existing solution if this one is shorter

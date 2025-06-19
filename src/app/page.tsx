@@ -80,11 +80,11 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 		}
 	}
 
-	return featuredPuzzle;
+	return featuredPuzzle as unknown as PublicPuzzle;
 }
 
 async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
-	return await prisma.puzzle.findMany({
+	return (await prisma.puzzle.findMany({
 		include: {
 			author: true,
 			solutions: {
@@ -107,7 +107,7 @@ async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 			createdAt: "desc",
 		},
 		take: 6,
-	});
+	})) as unknown as PublicPuzzle[];
 }
 
 export default async function Home() {

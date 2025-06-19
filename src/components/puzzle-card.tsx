@@ -12,7 +12,7 @@ type PuzzleWithDetails = {
 	title: string;
 	description: string;
 	createdAt: Date;
-	mode: "chars" | "runtime";
+	mode: string; //"chars" | "runtime";
 	author: {
 		name: string;
 	};

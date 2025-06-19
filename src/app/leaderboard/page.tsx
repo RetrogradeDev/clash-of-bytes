@@ -118,7 +118,7 @@ export default async function LeaderboardPage() {
 				</div>
 
 				<div className="space-y-6">
-					<h2 className="text-2xl font-bold text-white">🚀 Top Solvers</h2>{" "}
+					<h2 className="text-2xl font-bold text-white">🚀 Top Solvers</h2>
 					<div className="space-y-4">
 						{topSolvers.map((solver: any, index: number) => (
 							<Link
@@ -157,7 +157,26 @@ export default async function LeaderboardPage() {
 									<div className="text-right">
 										<p className="text-purple-400 font-semibold">
 											{solver.solutions.length > 0
-												? Math.min(...solver.solutions.map((s: any) => s.score))
+												? (() => {
+														const allSolutions = solver.solutions.map(
+															(s: any) => {
+																const score = s.score;
+																const mode = s.puzzle.mode;
+																return {
+																	score,
+																	mode,
+																};
+															},
+														);
+
+														const bestSolution = allSolutions.reduce(
+															(best: any, current: any) =>
+																current.score < best.score ? current : best,
+														);
+														return `${bestSolution.score} ${
+															bestSolution.mode === "chars" ? "chars" : "ms"
+														}`;
+												  })()
 												: 0}
 										</p>
 										<p className="text-gray-400 text-sm">best score</p>

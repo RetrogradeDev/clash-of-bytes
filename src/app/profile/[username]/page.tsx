@@ -29,6 +29,14 @@ async function getUserData(username: string): Promise<{
 			};
 		}[];
 	}[];
+	solutions: {
+		score: number;
+		puzzle: {
+			id: string;
+			title: string;
+			mode: string; //"chars" | "runtime";
+		};
+	}[];
 } | null> {
 	const user = await prisma.user.findUnique({
 		where: { name: username },
@@ -54,6 +62,18 @@ async function getUserData(username: string): Promise<{
 						},
 						orderBy: {
 							score: "asc",
+						},
+					},
+				},
+			},
+			solutions: {
+				select: {
+					score: true,
+					puzzle: {
+						select: {
+							id: true,
+							title: true,
+							mode: true,
 						},
 					},
 				},
@@ -121,11 +141,19 @@ export default async function ProfilePage({
 								Best Score
 							</h3>
 							<p className="text-3xl font-bold text-green-400">
-								{Math.min(
-									...user.puzzles.flatMap((p) =>
-										p.solutions.map((s) => s.score),
-									),
-								) || 0}
+								{/* TODO: wtf is this */}
+								{user.solutions.length > 0
+									? (() => {
+											const allSolutions = user.solutions;
+											const bestSolution = allSolutions.reduce(
+												(best, current) =>
+													current.score < best.score ? current : best,
+											);
+											return `${bestSolution.score} ${
+												bestSolution.puzzle.mode === "chars" ? "chars" : "ms"
+											}`;
+									  })()
+									: "N/A"}
 							</p>
 						</div>
 					</div>

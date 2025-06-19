@@ -14,7 +14,7 @@ import { formatDistanceToNow } from "date-fns";
 import { StarIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 
-async function getPuzzle(id: string): Promise<PublicPuzzle> {
+async function getPuzzle(id: string): Promise<PublicPuzzle | null> {
 	const puzzle = await prisma.puzzle.findUnique({
 		where: { id },
 		include: {
@@ -48,6 +48,7 @@ async function getPuzzle(id: string): Promise<PublicPuzzle> {
 		},
 	});
 
+	// @ts-expect-error
 	return puzzle;
 }
 
@@ -74,6 +75,18 @@ async function getUserSolutions(
 		where: {
 			puzzleId,
 			userId,
+		},
+		select: {
+			id: true,
+			score: true,
+			language: true,
+			code: true,
+			userId: true,
+			user: {
+				select: {
+					name: true,
+				},
+			},
 		},
 	});
 }
@@ -109,7 +122,10 @@ export default async function PuzzlePage({
 					<div className="flex items-start justify-between">
 						<div className="flex-1">
 							<h1 className="text-4xl font-bold text-white mb-2">
-								{puzzle.title}
+								{puzzle.title}{" "}
+								<span className="text-gray-400 text-sm italic">
+									({puzzle.mode})
+								</span>
 							</h1>
 							<div className="flex items-center space-x-4 text-sm text-purple-300">
 								<span>

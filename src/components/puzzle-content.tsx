@@ -5,17 +5,18 @@ import { useState } from "react";
 import { Editor } from "@monaco-editor/react";
 import ReactMarkdown from "react-markdown";
 
-import { submitSolution } from "@/lib/actions";
+import { runTestCases, submitSolution } from "@/lib/actions";
 import { executeCode, type TestResult } from "@/lib/code-execution";
 
 import { Card } from "./card";
+import { ClockIcon, TimerIcon } from "lucide-react";
 
 type Language = "javascript" | "python";
 
 interface PuzzleContentProps {
 	puzzle: {
 		id: string;
-		mode: "chars" | "runtime";
+		mode: string; //"chars" | "runtime";
 		testCases: any;
 	};
 	userSolutions?: Solution[] | null;
@@ -71,32 +72,62 @@ export function PuzzleContent({
 
 		setIsRunning(true);
 		setError("");
+		setSuccess("");
 		setTestResults(null);
 
 		console.log("Running code with language:", language);
 		let isSuccess = false;
 
-		try {
-			const testCases = puzzle.testCases as Array<{
-				input: string;
-				output: string;
-			}>;
-			const results = await executeCode(code, language, testCases);
-			setTestResults(results);
+		if (puzzle.mode === "chars") {
+			// No need to run this on server
+			try {
+				const testCases = puzzle.testCases as Array<{
+					input: string;
+					output: string;
+				}>;
+				const results = await executeCode(code, language, testCases);
+				setTestResults(results);
 
-			const passedCount = results.filter((r: any) => r.passed).length;
+				const passedCount = results.filter((r: any) => r.passed).length;
+				if (passedCount === results.length) {
+					setSuccess(`All ${passedCount} test cases passed! 🎉`);
+					isSuccess = true;
+				} else {
+					setError(`${passedCount}/${results.length} test cases passed`);
+				}
+
+				console.log("Test results:", results);
+			} catch (error) {
+				setError("Failed to execute code: " + (error as Error).message);
+			} finally {
+				setIsRunning(false);
+			}
+		} else {
+			const { success, results } = await runTestCases({
+				code: code.trim(),
+				language,
+				testCases: puzzle.testCases,
+				bench: puzzle.mode === "runtime", // Very slow :(
+			});
+
+			console.log("Running test cases result:", results, success);
+
+			if (!success || !results) {
+				setError("Failed to run test cases");
+				setIsRunning(false);
+				return false;
+			}
+
+			setTestResults(results);
+			setIsRunning(false);
+
+			const passedCount = results.filter((r) => r.passed).length;
 			if (passedCount === results.length) {
 				setSuccess(`All ${passedCount} test cases passed! 🎉`);
 				isSuccess = true;
 			} else {
 				setError(`${passedCount}/${results.length} test cases passed`);
 			}
-
-			console.log("Test results:", results);
-		} catch (error) {
-			setError("Failed to execute code: " + (error as Error).message);
-		} finally {
-			setIsRunning(false);
 		}
 
 		return isSuccess;
@@ -114,7 +145,7 @@ export function PuzzleContent({
 		}
 
 		// Rerun tests
-		const ok = await handleRunCode();
+		const ok = puzzle.mode === "runtime" || (await handleRunCode()); // TODO
 
 		// First run the code to make sure it passes
 		if (!ok) {
@@ -251,15 +282,23 @@ export function PuzzleContent({
 									<span className="font-semibold text-white">
 										Test Case {index + 1}
 									</span>
-									<span
-										className={`px-2 py-1 rounded text-sm font-semibold ${
-											result.passed
-												? "bg-green-600 text-white"
-												: "bg-red-600 text-white"
-										}`}
-									>
-										{result.passed ? "PASS" : "FAIL"}
-									</span>
+									<div className="flex items-center space-x-2">
+										{result.time && (
+											<span className="text-sm text-gray-400 flex items-center">
+												<TimerIcon className="mr-1 size-4" />
+												{result.time}ms
+											</span>
+										)}
+										<span
+											className={`px-2 py-1 rounded text-sm font-semibold ${
+												result.passed
+													? "bg-green-600 text-white"
+													: "bg-red-600 text-white"
+											}`}
+										>
+											{result.passed ? "PASS" : "FAIL"}
+										</span>
+									</div>
 								</div>
 
 								<div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
