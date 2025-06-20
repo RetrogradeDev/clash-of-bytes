@@ -172,9 +172,15 @@ async function calculateScore(
 		if (result.stderr) stderr = result.stderr;
 	}
 
-	const sortedTimes = times.sort((a, b) => a - b);
-	sortedTimes.splice(0, 1); // Remove the fastest time
-	sortedTimes.splice(sortedTimes.length - 1, 2); // Remove the two slowest times
+	console.log("Execution times:", times);
+
+	let sortedTimes = times.filter((t) => !isNaN(t)).sort((a, b) => a - b);
+	// Only keep the fastest 3 times
+	if (sortedTimes.length > 3) {
+		sortedTimes = sortedTimes.slice(0, 3);
+	}
+
+	console.log("Sorted times after removing slowest:", sortedTimes);
 
 	const totalTime =
 		sortedTimes.reduce((acc, t) => acc + t, 0) / sortedTimes.length;

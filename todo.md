@@ -9,3 +9,4 @@
 - [x] support both python and js solutions
 - [ ] test leaderboards better with a lot of users
 - [ ] check responsiveness on a real phone
+- [ ] comments

@@ -21,9 +21,9 @@ const inputOutputFormats: InputOutputFormat[] = [
 	"string",
 	"number",
 	"boolean",
-	"string[]",
-	"number[]",
-	"boolean[]",
+	// "string[]", TODO: Our eval system does not support arrays yet
+	// "number[]",
+	// "boolean[]",
 ];
 
 type Mode = "chars" | "runtime";
