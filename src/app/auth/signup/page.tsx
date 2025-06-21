@@ -22,7 +22,7 @@ export default function SignUpPage() {
 		setIsLoading(true);
 		setError("");
 
-		if (!username || !email || !password || !confirmPassword) {
+		if (!username.trim() || !email.trim() || !password || !confirmPassword) {
 			setError("All fields are required");
 			setIsLoading(false);
 			return;
@@ -34,7 +34,7 @@ export default function SignUpPage() {
 			return;
 		}
 
-		if (!/^[a-zA-Z0-9._-]+$/.test(username)) {
+		if (!/^[a-zA-Z0-9._-]+$/.test(username.trim())) {
 			setError(
 				"Username can only contain letters, numbers, dots, underscores, and hyphens",
 			);
@@ -50,10 +50,13 @@ export default function SignUpPage() {
 
 		try {
 			const result = await signUp.email(
-				{ email, password, name: username },
+				{ email: email.trim(), password, name: username.trim() },
 				{
 					onSuccess: () => {
 						router.push("/");
+						setTimeout(() => {
+							window.location.href = "/";
+						}, 500);
 					},
 					onError: (ctx) => {
 						setError(ctx.error.message);

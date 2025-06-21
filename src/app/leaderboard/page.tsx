@@ -16,6 +16,7 @@ async function getLeaderboardData() {
 					score: true,
 					puzzle: {
 						select: {
+							mode: true,
 							title: true,
 						},
 					},
@@ -51,7 +52,6 @@ async function getLeaderboardData() {
 				orderBy: {
 					score: "asc",
 				},
-				take: 1,
 			},
 		},
 		orderBy: {
@@ -173,6 +173,7 @@ export default async function LeaderboardPage() {
 															(best: any, current: any) =>
 																current.score < best.score ? current : best,
 														);
+
 														return `${bestSolution.score} ${
 															bestSolution.mode === "chars" ? "chars" : "ms"
 														}`;

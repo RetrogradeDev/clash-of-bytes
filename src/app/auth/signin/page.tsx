@@ -21,7 +21,7 @@ export default function SignInPage() {
 		setError("");
 
 		try {
-			const result = await signIn.email(
+			await signIn.email(
 				{ email, password },
 				{
 					onSuccess: () => {
@@ -33,6 +33,10 @@ export default function SignInPage() {
 							window.location.href = redirectUrl;
 						} else {
 							router.push("/");
+
+							setTimeout(() => {
+								window.location.href = "/";
+							}, 500);
 						}
 					},
 					onError: (ctx) => {

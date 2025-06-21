@@ -26,7 +26,6 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 				orderBy: {
 					score: "asc",
 				},
-				take: 1,
 			},
 			votes: true,
 		},
@@ -58,7 +57,6 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 					orderBy: {
 						score: "asc",
 					},
-					take: 1,
 				},
 				votes: true,
 			},
@@ -99,7 +97,6 @@ async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 				orderBy: {
 					score: "asc",
 				},
-				take: 1,
 			},
 			votes: true,
 		},
@@ -123,8 +120,9 @@ export default async function Home() {
 					<div className="text-center space-y-6">
 						<h1 className="text-5xl font-bold text-white">⚡Clash of Bytes</h1>
 						<p className="text-xl text-gray-300 max-w-2xl mx-auto">
-							The ultimate code golf platform. Solve programming puzzles in as
-							few characters as possible and compete with developers worldwide.
+							Master the art of efficient coding. Craft lightning-fast
+							algorithms and ultra-compact solutions to challenge your
+							programming prowess against developers from around the globe.
 						</p>
 						<div className="flex justify-center space-x-4">
 							<Link

@@ -34,7 +34,6 @@ async function getPuzzles(searchTerm?: string) {
 				orderBy: {
 					score: "asc",
 				},
-				take: 1,
 			},
 			votes: true,
 		},
@@ -101,6 +100,7 @@ export default async function PuzzlesPage({
 				<Suspense
 					fallback={<div className="text-white">Loading puzzles...</div>}
 				>
+					{/* @ts-expect-error // Stupid prisma json */}
 					<PuzzleGrid puzzles={puzzles} />
 				</Suspense>
 			</div>

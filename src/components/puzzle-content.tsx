@@ -161,9 +161,9 @@ export function PuzzleContent({
 						`Solution submitted! Your code: ${result.score} characters 🎯`,
 					);
 
-					// TODO: Update UI to show new solution
-					// Quick fix: Reload the page
-					window.location.reload();
+					setTimeout(() => {
+						window.location.reload();
+					}, 2000);
 				} else {
 					setSuccess(
 						`Your previous solution (${result.score} ${

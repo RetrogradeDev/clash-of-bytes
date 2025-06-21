@@ -115,6 +115,7 @@ export default async function PuzzlePage({
 		// Somehow the user submitted solutions for 3+ languages, while we only have 2
 		userSolutions.splice(2);
 	}
+
 	return (
 		<div className="max-w-6xl mx-auto">
 			<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20 mx-4 mt-8">
