@@ -10,6 +10,41 @@ export interface TestResult {
 	time?: number; // Optional, for performance tracking
 }
 
+function compareResults(a: string, b: string): boolean {
+	if (a === b) {
+		return true;
+	}
+
+	if (a.startsWith('"') && a.endsWith('"')) {
+		return a.slice(1, -1) === b;
+	}
+
+	if (b.startsWith('"') && b.endsWith('"')) {
+		return a === b.slice(1, -1);
+	}
+
+	if (a.startsWith("[") && a.endsWith("]")) {
+		try {
+			console.log("Input, output:", a, b);
+
+			const inputArray = JSON.parse(a.replace(/'/g, '"'));
+			const outputArray = JSON.parse(b);
+
+			console.log(
+				"Comparing arrays:",
+				JSON.stringify(inputArray),
+				JSON.stringify(outputArray),
+			);
+
+			return JSON.stringify(inputArray) === JSON.stringify(outputArray);
+		} catch {
+			return false;
+		}
+	}
+
+	return false;
+}
+
 export async function executeCode(
 	code: string,
 	language: "javascript" | "python",
@@ -18,11 +53,22 @@ export async function executeCode(
 	const results: TestResult[] = [];
 
 	for (const testCase of testCases) {
+		if (!testCase.input.startsWith("[") && !testCase.input.startsWith('"')) {
+			// Make sure it's a string
+			if (
+				isNaN(parseFloat(testCase.input)) &&
+				testCase.input !== "true" &&
+				testCase.input !== "false"
+			) {
+				testCase.input = `"${testCase.input}"`;
+			}
+		}
+
 		try {
 			if (language === "javascript") {
 				const [result, stdout] = await executeJavaScript(code, testCase.input);
 				results.push({
-					passed: result.trim() === testCase.output.trim(),
+					passed: compareResults(result.trim(), testCase.output.trim()),
 					input: testCase.input,
 					expected: testCase.output,
 					actual: result,
@@ -34,7 +80,8 @@ export async function executeCode(
 					testCase.input,
 				);
 				results.push({
-					passed: !error && result.trim() === testCase.output.trim(),
+					passed:
+						!error && compareResults(result.trim(), testCase.output.trim()),
 					input: testCase.input,
 					expected: testCase.output,
 					actual: result,
@@ -67,6 +114,10 @@ async function executeJavaScript(
 
 			const logs: string[] = [];
 			const originalConsoleLog = console.log;
+			const originalConsoleError = console.error;
+			const originalConsoleWarn = console.warn;
+			const originalConsoleDebug = console.debug;
+			const originalConsoleInfo = console.info;
 
 			console.log = (...args) => logs.push(args.join(" "));
 			console.error = (...args) => logs.push("**ERROR:** " + args.join(" "));
@@ -76,7 +127,6 @@ async function executeJavaScript(
 
 			try {
 				const func = new Function(
-					"input",
 					`
                     ${code}
                     
@@ -84,15 +134,17 @@ async function executeJavaScript(
                       throw new Error('Please define a function called "solve" that takes input as a parameter');
                     }
                     
-                    return solve(input);
+                    return solve(${input});
                   `,
 				);
 
-				let result = func(input);
+				let result = func();
 				const stdout = logs.join("\n");
+				console.log(stdout);
 
 				try {
-					result = result.toString();
+					originalConsoleLog("Captured stdout:", result, typeof result);
+					result = JSON.stringify(result);
 				} catch (error) {
 					console.error("Error converting result to string:", error);
 					result = "";
@@ -102,6 +154,10 @@ async function executeJavaScript(
 				resolve([result, stdout]);
 			} finally {
 				console.log = originalConsoleLog;
+				console.error = originalConsoleError;
+				console.warn = originalConsoleWarn;
+				console.debug = originalConsoleDebug;
+				console.info = originalConsoleInfo;
 			}
 		} catch (error) {
 			reject(error);
@@ -153,14 +209,18 @@ from io import StringIO
 old_stdout = sys.stdout
 sys.stdout = captured_output = StringIO()
 
+false = False
+true = True
+
 try:
 ${fixedCode}
     
     if 'solve' not in globals():
         raise NameError('Please define a function called "solve" that takes input as a parameter')
     
-    result = solve("""${input.replace(/"/g, '\\"')}""")
-    print("_RES=" + result, end='')
+    result = solve(${input})
+
+    print("_RES=" + str(result), end='')
     
 except Exception as e:
     print(f"Error: {e}", end='')
@@ -178,12 +238,19 @@ output = captured_output.getvalue()
 		const printStdout: string = all_stdout.replace(/_RES=(.*)/, "").trim();
 
 		if (resultMatch) {
-			return [resultMatch[1], printStdout, ""];
+			let result = resultMatch[1];
+			if (result === "True") {
+				result = "true";
+			} else if (result === "False") {
+				result = "false";
+			}
+
+			return [result, printStdout, ""];
 		} else {
-			return ["", printStdout, "Python execution error:" + all_stdout];
+			return ["", printStdout, all_stdout];
 		}
 	} catch (error) {
-		return ["", "", "Python execution error: " + (error as Error).message];
+		return ["", "", (error as Error).message];
 	}
 }
 

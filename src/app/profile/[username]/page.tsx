@@ -141,7 +141,6 @@ export default async function ProfilePage({
 								Best Score
 							</h3>
 							<p className="text-3xl font-bold text-green-400">
-								{/* TODO: wtf is this */}
 								{user.solutions.length > 0
 									? (() => {
 											const allSolutions = user.solutions;

@@ -144,17 +144,6 @@ export function PuzzleContent({
 			return;
 		}
 
-		// Rerun tests
-		const ok = puzzle.mode === "runtime" || (await handleRunCode()); // TODO
-
-		// First run the code to make sure it passes
-		if (!ok) {
-			setError(
-				"Please run your code and ensure all test cases pass before submitting",
-			);
-			return;
-		}
-
 		setIsSubmitting(true);
 		setError("");
 		setSuccess("");

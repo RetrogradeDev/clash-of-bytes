@@ -21,9 +21,9 @@ const inputOutputFormats: InputOutputFormat[] = [
 	"string",
 	"number",
 	"boolean",
-	// "string[]", TODO: Our eval system does not support arrays yet
-	// "number[]",
-	// "boolean[]",
+	"string[]",
+	"number[]",
+	"boolean[]",
 ];
 
 type Mode = "chars" | "runtime";
@@ -116,9 +116,12 @@ export default function SubmitPuzzlePage() {
 		if (testCases.length > testCasesMaxLength)
 			return `At most ${testCasesMaxLength} test cases are allowed`;
 
-		const validTestCases = testCases.filter(
-			(tc) => tc.input.trim() && tc.output.trim(),
-		);
+		const validTestCases = testCases
+			.filter((tc) => tc.input.trim() && tc.output.trim())
+			.map((tc) => ({
+				input: inputFormat === "string" ? `"${tc.input}"` : tc.input,
+				output: outputFormat === "string" ? `"${tc.output}"` : tc.output,
+			}));
 		if (validTestCases.length === 0)
 			return "At least one complete test case is required";
 

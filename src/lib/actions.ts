@@ -202,12 +202,30 @@ export async function runTestCases(data: {
 				return null;
 			}
 
+			if (!testCase.input.startsWith("[") && !testCase.input.startsWith('"')) {
+				// Make sure it's a string
+				if (
+					isNaN(parseFloat(testCase.input)) &&
+					testCase.input !== "true" &&
+					testCase.input !== "false"
+				) {
+					testCase.input = `"${testCase.input}"`;
+				}
+			}
+
 			const finalCode = `
 ${data.code}
 
-${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+solve("${
-				testCase.input
-			}"))`;
+${
+	data.language === "python"
+		? `false = False
+true = True`
+		: ""
+}
+
+${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
+				data.language === "javascript" ? "JSON.stringify(" : "str("
+			}solve(${testCase.input})))`;
 
 			const [time, stdout, stderr] = await calculateScore(
 				finalCode,
@@ -215,7 +233,7 @@ ${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+solve("${
 				data.bench ? 5 : 1, // Run multiple times if benchmarking
 			);
 
-			const resolvedOutput =
+			let resolvedOutput =
 				stdout
 					.split("\n")
 					.find((line) => line.startsWith("_OUTPUT$"))
@@ -223,8 +241,35 @@ ${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+solve("${
 					.trim() || "";
 			const output = stdout.replace(/_OUTPUT\$.*/, "").trim();
 
+			console.log("Resolved output:", resolvedOutput);
+			// Stringify the output for comparison
+			if (data.language === "python") {
+				resolvedOutput = resolvedOutput.replace(/False/g, "false");
+				resolvedOutput = resolvedOutput.replace(/True/g, "true");
+				resolvedOutput = resolvedOutput.replace(/'/g, '"');
+				if (!resolvedOutput.startsWith("[")) {
+					resolvedOutput = `"${resolvedOutput}"`;
+				} else {
+					resolvedOutput = JSON.stringify(JSON.parse(resolvedOutput));
+				}
+			}
+
+			const expected = testCase.output.startsWith("[")
+				? JSON.stringify(JSON.parse(testCase.output.trim()))
+				: `"${testCase.output.trim()}"`;
+
+			let isTheSame = resolvedOutput === expected;
+			if (!isTheSame) {
+				if (expected.startsWith('"') && expected.endsWith('"')) {
+					resolvedOutput = `"${resolvedOutput}"`;
+					isTheSame = resolvedOutput === expected;
+				}
+			}
+
+			console.log("Resolved output:", resolvedOutput, "Expected:", expected);
+
 			return {
-				passed: resolvedOutput === testCase.output.trim(),
+				passed: resolvedOutput === expected,
 				input: testCase.input,
 				expected: testCase.output,
 				actual: resolvedOutput,
@@ -303,7 +348,7 @@ export async function submitSolution(data: {
 		if (result.results.some((r) => !r.passed)) {
 			return {
 				success: false,
-				error: "Test cases failed",
+				error: "Test cases failed, run your code to see details",
 			};
 		}
 

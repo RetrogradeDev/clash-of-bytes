@@ -16,7 +16,23 @@ function ArrayInput(props: {
 			const out = JSON.parse(props.value);
 
 			if (Array.isArray(out)) {
-				setValues(out);
+				console.log("Parsed array:", out);
+
+				// Make sure the array contains nothing but strings, bools or numbers
+				if (
+					!out.every((item) => {
+						return (
+							typeof item === "string" ||
+							typeof item === "number" ||
+							typeof item === "boolean"
+						);
+					})
+				) {
+					setValues(out[0]);
+					throw new Error("Invalid array format");
+				}
+
+				setValues(out as string[]);
 			}
 		} catch (error) {
 			setValues([props.value]);
@@ -27,52 +43,85 @@ function ArrayInput(props: {
 		// Prevent infinite loop
 		if (values.length === 0) return;
 
-		props.onChange(JSON.stringify(values));
+		// Convert array to string format that preserves original types
+		const newStringValue =
+			type === "string"
+				? `[${values.map((v) => `"${v}"`).join(", ")}]`
+				: `[${values
+						.map((v) => (type === "number" ? Number(v) : v))
+						.join(", ")}]`;
+		if (newStringValue !== props.value) {
+			console.log("Updating string value:", newStringValue, "from", values);
+			props.onChange(newStringValue);
+		}
 	}, [values]);
 
 	return (
-		<div className="mt-[-30px]">
-			<button
-				className="ml-auto mb-4 flex items-center justify-center rounded-md bg-white/10 hover:bg-white/20 h-10 w-18"
-				onClick={() => {
-					setValues([...values, ""]);
-				}}
-				type="button"
-				title="Add another value"
-				aria-label="Add another value"
-			>
-				+ Add
-			</button>
+		<div className="space-y-2">
+			<div className="flex items-center justify-between">
+				<label className="text-sm text-white/70 font-medium">Array Items</label>
+				<button
+					className="flex items-center gap-1 px-3 py-1.5 text-sm rounded-md bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30"
+					onClick={() => {
+						setValues([...values, ""]);
+					}}
+					type="button"
+					title="Add another value"
+					aria-label="Add another value"
+				>
+					+ Add Item
+				</button>
+			</div>
 
-			<ul>
-				{values.map((value, index) => (
-					<li key={index} className="flex gap-2">
-						<TypedFunctionInput
-							type={type}
-							value={value}
-							onChange={(value) => {
-								const newValues = [...values];
-								newValues[index] = value;
-								setValues(newValues);
-							}}
-						/>
+			<div className="border border-white/20 rounded-lg p-3 bg-white/5">
+				{values.length === 0 ? (
+					<div className="text-center py-6 text-white/50">
+						<p>No items in array</p>
 						<button
-							className="flex items-center justify-center rounded-md bg-white/10 hover:bg-white/20 size-12"
-							onClick={() => {
-								if (values.length === 1) {
-									setValues([""]);
-									return;
-								}
-								setValues(values.filter((_, i) => i !== index));
-							}}
+							className="mt-2 text-sm text-purple-400 hover:text-purple-300"
+							onClick={() => setValues([""])}
 							type="button"
-							title="Remove this value"
 						>
-							<TrashIcon className="w-4 h-4" />
+							Add first item
 						</button>
-					</li>
-				))}
-			</ul>
+					</div>
+				) : (
+					<div className="space-y-2">
+						{values.map((value, index) => (
+							<div key={index} className="flex items-center gap-2">
+								<span className="text-xs text-white/50 font-mono w-6">
+									{index}
+								</span>
+								<div className="flex-1">
+									<TypedFunctionInput
+										type={type}
+										value={value}
+										onChange={(value) => {
+											const newValues = [...values];
+											newValues[index] = value;
+											setValues(newValues);
+										}}
+									/>
+								</div>
+								<button
+									className="flex items-center justify-center rounded-md bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 size-8"
+									onClick={() => {
+										if (values.length === 1) {
+											setValues([]);
+											return;
+										}
+										setValues(values.filter((_, i) => i !== index));
+									}}
+									type="button"
+									title="Remove this value"
+								>
+									<TrashIcon className="w-3 h-3" />
+								</button>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }
