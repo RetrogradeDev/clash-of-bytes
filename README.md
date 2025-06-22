@@ -6,7 +6,6 @@
 
 Each day, a community-submitted challenge is featured. Users can create puzzles, vote on them, submit creative solutions, and climb the leaderboard.
 
----
 
 ## Features
 
@@ -18,7 +17,6 @@ Each day, a community-submitted challenge is featured. Users can create puzzles,
 -  Voting system for puzzles and solutions
 -  Daily featured challenge
 
----
 
 ## Tech Stack
 
@@ -29,7 +27,6 @@ Each day, a community-submitted challenge is featured. Users can create puzzles,
 | Database       | PostgreSQL via [Prisma](https://www.prisma.io/) ORM                                          |
 | Code Execution | Dockerized runtimes                                                                          |
 
----
 
 ## Getting Started
 
@@ -48,7 +45,6 @@ bun install
 
 Or use `yarn` or `npm` if you prefer.
 
----
 
 ### 3. Set up your environment
 
@@ -56,7 +52,6 @@ Rename the `.env.example` to `.env` file in the root and fill out the required e
 See the comments in the file for details.
 Note: you will need a PostgreSQL database, if you haven't installed one yet, check out this guide: [PostgreSQL Installation Guide](https://www.w3schools.com/postgresql/postgresql_install.php).
 
----
 
 ### 4. Setup database
 
@@ -64,7 +59,6 @@ Note: you will need a PostgreSQL database, if you haven't installed one yet, che
 bun prisma push db
 ```
 
----
 
 ### 5. Setup Docker sandbox
 Make sure you have Docker installed and running. The code execution is sandboxed using Docker containers.
@@ -78,7 +72,6 @@ cd ../js
 docker build -t my-javascript-runner .
 ```
 
----
 
 ### 6. Start the dev server
 
@@ -88,7 +81,6 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
----
 
 ## Dockerized Code Execution
 
@@ -99,7 +91,6 @@ The backend runs submitted code securely inside a Docker container. Currently su
 
 Execution is isolated per test case per request using short-lived containers. Each puzzle defines input/output test cases, and the runner compares results and tracks performance metrics.
 
----
 
 ## Submitting a Puzzle
 
@@ -109,7 +100,6 @@ Each puzzle must include:
 * Example input/output
 * At least one test cases
 
----
 
 ## Competitive Modes
 
@@ -118,27 +108,23 @@ Each puzzle must include:
 | Speed       | Solutions ranked by execution time  |
 | Least Chars | Solutions ranked by character count |
 
----
 
 ## Security Notes
 
 * All code execution is done inside tightly sandboxed Docker containers
 * No code is executed directly in the main app process
 
----
 
 ## Roadmap
 
 * [ ] Puzzle discussion threads
 * [ ] AI puzzle quality checker
 
----
 
 ## Contributing
 
 Pull requests welcome! If you'd like to submit your own challenge logic or improve the code execution runner, feel free to fork and go wild.
 
----
 
 ## License
 
