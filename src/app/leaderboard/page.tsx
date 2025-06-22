@@ -1,7 +1,15 @@
-import { prisma } from "@/lib/prisma";
+import type { Metadata } from "next";
+import Link from "next/link";
+
 import { formatDistanceToNow } from "date-fns";
 import { TrophyIcon, StarIcon, CodeIcon, UsersIcon } from "lucide-react";
-import Link from "next/link";
+
+import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+	title: "Clash of Bytes - Leaderboard",
+	description: "View the top users and puzzles in Clash of Bytes.",
+};
 
 async function getLeaderboardData() {
 	const totalUsers = await prisma.user.count();

@@ -36,8 +36,8 @@ Each day, a community-submitted challenge is featured. Users can create puzzles,
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/programordie2/clashofbytes.git
-cd clashofbytes
+git clone https://github.com/programordie2/clash-of-bytes.git
+cd clash-of-bytes
 ````
 
 ### 2. Install dependencies

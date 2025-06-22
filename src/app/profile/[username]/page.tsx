@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -9,6 +10,18 @@ import {
 } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ username: string }>;
+}): Promise<Metadata> {
+	const { username } = await params;
+	return {
+		title: `${username}'s Profile - Clash of Bytes`,
+		description: `Profile of ${username} on Clash of Bytes, showcasing their programming puzzles and solutions.`,
+	};
+}
 
 async function getUserData(username: string): Promise<{
 	name: string;

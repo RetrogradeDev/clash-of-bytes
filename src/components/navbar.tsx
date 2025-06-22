@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useState } from "react";
+import Image from "next/image";
 
 export function Navbar() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -14,9 +15,16 @@ export function Navbar() {
 				<div className="flex items-center justify-between h-16">
 					<Link
 						href="/"
-						className="text-2xl font-bold text-white hidden md:block"
+						className="text-white hidden md:flex items-center space-x-2"
 					>
-						⚡ Clash of Bytes
+						<Image
+							src="/web-app-manifest-192x192.png"
+							alt="Clash of Bytes"
+							width={32}
+							height={32}
+							className="rounded-md"
+						/>
+						<span className="text-2xl font-bold">Clash of Bytes</span>
 					</Link>
 
 					{/* Desktop navigation */}

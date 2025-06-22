@@ -5,6 +5,13 @@ import { SearchAndFilter } from "@/components/search-and-filter";
 
 import { Suspense } from "react";
 import { PuzzleIcon } from "lucide-react";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+	title: "Clash of Bytes - Programming Puzzles",
+	description:
+		"Explore a variety of programming puzzles created by the community.",
+};
 
 async function getPuzzles(searchTerm?: string) {
 	const whereClause = searchTerm

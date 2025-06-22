@@ -13,6 +13,26 @@ import { Card } from "@/components/card";
 import { formatDistanceToNow } from "date-fns";
 import { StarIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import type { Metadata } from "next";
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+	const puzzle = await getPuzzle((await params).id);
+
+	if (!puzzle) {
+		return {
+			title: "Puzzle Not Found - Clash of Bytes",
+			description: "The requested puzzle could not be found.",
+		};
+	}
+
+	return {
+		title: `${puzzle.title} - Clash of Bytes`,
+		description: puzzle.description.slice(0, 160),
+	};
+}
 
 async function getPuzzle(id: string): Promise<PublicPuzzle | null> {
 	const puzzle = await prisma.puzzle.findUnique({
