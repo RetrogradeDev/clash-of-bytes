@@ -125,7 +125,8 @@ export default async function PuzzlePage({
 							<h1 className="text-4xl font-bold text-white mb-2">
 								{puzzle.title}{" "}
 								<span className="text-gray-400 text-sm italic">
-									({puzzle.mode})
+									({puzzle.mode === "runtime" ? "Execution Time" : "Chars"}{" "}
+									Mode)
 								</span>
 							</h1>
 							<div className="flex items-center space-x-4 text-sm text-purple-300">

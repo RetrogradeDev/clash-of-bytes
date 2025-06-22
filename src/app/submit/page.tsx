@@ -217,11 +217,8 @@ export default function SubmitPuzzlePage() {
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								onChange={(e) => setMode(e.target.value as Mode)}
 							>
-								{modes.map((mode) => (
-									<option key={mode} value={mode}>
-										{mode.charAt(0).toUpperCase() + mode.slice(1)}
-									</option>
-								))}
+								<option value="runtime">Execution Time</option>
+								<option value="chars">Characters</option>
 							</select>
 						</div>
 
