@@ -11,6 +11,9 @@ export const metadata: Metadata = {
 	description: "View the top users and puzzles in Clash of Bytes.",
 };
 
+// Prevent some goofy docker errors
+export const dynamic = "force-dynamic";
+
 async function getLeaderboardData() {
 	const totalUsers = await prisma.user.count();
 	const totalPuzzles = await prisma.puzzle.count();

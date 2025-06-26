@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PuzzleCard } from "@/components/puzzle-card";
 
+export const dynamic = "force-dynamic";
+
 async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);

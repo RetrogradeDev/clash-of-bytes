@@ -5,7 +5,8 @@ import { Navbar } from "@/components/navbar";
 
 export const metadata: Metadata = {
 	title: "Clash of Bytes - Programming Puzzles",
-	description: "Solve programming puzzles in as few characters as possible",
+	description:
+		"Master the art of efficient coding. Craft lightning-fast algorithms and ultra-compact solutions to challenge your programming prowess against developers from around the globe.",
 };
 
 export default function RootLayout({
