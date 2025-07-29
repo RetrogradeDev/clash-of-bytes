@@ -242,6 +242,14 @@ export function PuzzleContent({
 				)}
 			</div>
 
+			{isSubmitting || isRunning ? (
+				<span className="text-gray-400 text-sm flex items-center">
+					<ClockIcon className="mr-1 size-4 animate-spin" />
+					It can take up to 2 minutes to run all test cases. Please be patient,
+					we are running this on a free server.
+				</span>
+			) : null}
+
 			{error && (
 				<div className="bg-red-900/50 border border-red-500/50 rounded-lg p-4">
 					<p className="text-red-200">{error}</p>
@@ -328,6 +336,12 @@ export function PuzzleContent({
 								</div>
 							</div>
 						))}
+
+						<span className="text-gray-400 text-sm">
+							Please notice timed test cases can be off by a few milliseconds
+							due to server load and other factors (I'm too poor to afford
+							better servers).
+						</span>
 					</div>
 				</div>
 			)}

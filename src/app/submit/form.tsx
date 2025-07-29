@@ -75,11 +75,15 @@ export function SubmitPuzzleForm() {
 	}
 
 	const addTestCase = () => {
-		setTestCases([...testCases, { input: "", output: "" }]);
+		console.log("Adding new test case");
+		const startValue = inputFormat === "boolean" ? "true" : "";
+		const endValue = outputFormat === "boolean" ? "true" : "";
+		setTestCases([...testCases, { input: startValue, output: endValue }]);
 	};
 
 	const removeTestCase = (index: number) => {
 		if (testCases.length > 1) {
+			console.log("Removing test case at index:", index);
 			setTestCases(testCases.filter((_, i) => i !== index));
 		}
 	};
@@ -92,6 +96,9 @@ export function SubmitPuzzleForm() {
 		const updated = testCases.map((testCase, i) =>
 			i === index ? { ...testCase, [field]: value } : testCase,
 		);
+
+		console.log("Updated test case:", updated);
+
 		setTestCases(updated);
 	};
 

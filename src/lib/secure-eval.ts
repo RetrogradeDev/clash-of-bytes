@@ -42,9 +42,19 @@ export function secureJsEval(code: string): Promise<[number, string, string]> {
 				);
 			}
 
+			console.log("All data:", allData);
+			console.log("Time lines:", timeLines);
+			console.log("Code exit:", code);
+			console.log("Stdout:", stdout);
+			console.log("Stderr:", stderr);
+
 			const timeLine = timeLines[0];
-			const timeMs = timeLine ? parseFloat(timeLine.slice(6, -1)) : 9999;
+			const timeMs = timeLine
+				? parseFloat(timeLine.replace("_TIME$", "").trim())
+				: 9999;
 			stdout = allData.filter((line) => !line.startsWith("_TIME$")).join("\n");
+
+			console.log("Parsed time:", timeMs);
 
 			if (code !== 0) {
 				return reject(new Error(`Docker exited with code ${code}: ${stderr}`));

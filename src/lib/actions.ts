@@ -175,9 +175,9 @@ async function calculateScore(
 	console.log("Execution times:", times);
 
 	let sortedTimes = times.filter((t) => !isNaN(t)).sort((a, b) => a - b);
-	// Only keep the fastest 3 times
-	if (sortedTimes.length > 3) {
-		sortedTimes = sortedTimes.slice(0, 3);
+	// Only keep the fastest 2 times
+	if (sortedTimes.length > 2) {
+		sortedTimes = sortedTimes.slice(0, 2);
 	}
 
 	console.log("Sorted times after removing slowest:", sortedTimes);
