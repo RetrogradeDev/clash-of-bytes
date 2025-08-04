@@ -6,6 +6,12 @@ export const auth = betterAuth({
 	database: prismaAdapter(prisma, {
 		provider: "postgresql",
 	}),
+	account: {
+		accountLinking: {
+			enabled: true,
+			trustedProviders: ["slack", "github"],
+		},
+	},
 	emailAndPassword: {
 		enabled: true,
 		requireEmailVerification: false,
@@ -15,6 +21,10 @@ export const auth = betterAuth({
 			clientId: process.env.SLACK_CLIENT_ID!,
 			clientSecret: process.env.SLACK_CLIENT_SECRET!,
 			team: "T0266FRGM",
+		},
+		github: {
+			clientId: process.env.GITHUB_CLIENT_ID!,
+			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
 		},
 	},
 	session: {

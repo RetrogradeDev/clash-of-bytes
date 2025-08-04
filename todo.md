@@ -12,5 +12,6 @@
 - [ ] comments
 - [ ] streaks
 - [ ] badges
+- [ ] Link accounts -> verified badge
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile
