@@ -10,5 +10,7 @@
 - [x] test leaderboards better with a lot of users
 - [x] check responsiveness on a real phone
 - [ ] comments
+- [ ] streaks
+- [ ] badges
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile

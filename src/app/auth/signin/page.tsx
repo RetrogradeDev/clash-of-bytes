@@ -7,6 +7,7 @@ import { useState } from "react";
 import { UserLockIcon } from "lucide-react";
 
 import { signIn } from "@/lib/auth-client";
+import { SocialAuthButtons } from "@/components/social-auth";
 
 export default function SignInPage() {
 	const [email, setEmail] = useState("");
@@ -111,6 +112,9 @@ export default function SignInPage() {
 							{isLoading ? "Signing In..." : "Sign In"}
 						</button>
 					</form>
+
+					<SocialAuthButtons />
+
 					<div className="mt-6 text-center">
 						<p className="text-white/60">
 							Don't have an account?{" "}

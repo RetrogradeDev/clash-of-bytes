@@ -7,6 +7,7 @@ import { useState } from "react";
 import { AtomIcon } from "lucide-react";
 
 import { signUp } from "@/lib/auth-client";
+import { SocialAuthButtons } from "@/components/social-auth";
 
 export default function SignUpPage() {
 	const [username, setUsername] = useState("");
@@ -170,6 +171,9 @@ export default function SignUpPage() {
 							{isLoading ? "Creating Account..." : "Create Account"}
 						</button>
 					</form>
+
+					<SocialAuthButtons />
+
 					<div className="mt-6 text-center">
 						<p className="text-white/60">
 							Already have an account?{" "}

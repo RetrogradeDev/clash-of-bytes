@@ -230,7 +230,7 @@ ${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
 			const [time, stdout, stderr] = await calculateScore(
 				finalCode,
 				data.language,
-				data.bench ? 5 : 1, // Run multiple times if benchmarking
+				data.bench ? 3 : 1, // Run multiple times if benchmarking
 			);
 
 			let resolvedOutput =

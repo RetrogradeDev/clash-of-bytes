@@ -39,7 +39,7 @@ async function getLeaderboardData() {
 				_count: "desc",
 			},
 		},
-		take: 10,
+		take: 5,
 	});
 
 	// Get most voted puzzles

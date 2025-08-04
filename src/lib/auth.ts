@@ -10,7 +10,13 @@ export const auth = betterAuth({
 		enabled: true,
 		requireEmailVerification: false,
 	},
-	socialProviders: {},
+	socialProviders: {
+		slack: {
+			clientId: process.env.SLACK_CLIENT_ID!,
+			clientSecret: process.env.SLACK_CLIENT_SECRET!,
+			team: "T0266FRGM",
+		},
+	},
 	session: {
 		expiresIn: 60 * 60 * 24 * 7, // 7 days
 	},
