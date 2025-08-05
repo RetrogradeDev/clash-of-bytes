@@ -13,5 +13,10 @@
 - [ ] streaks
 - [ ] badges
 - [ ] Link accounts -> verified badge
+- [ ] settings
+  - [ ] account
+  - [ ] linked accounts
+- [ ] make navbar 100% css
+- [ ] avatars
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile
