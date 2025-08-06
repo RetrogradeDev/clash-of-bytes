@@ -15,10 +15,12 @@
 - [ ] Link accounts -> verified badge
 - [ ] settings
   - [x] account
-  - [ ] linked accounts
+  - [x] linked accounts
 - [ ] make navbar 100% css
 - [ ] avatars
 - [ ] build script
 - [ ] use username plugin instead of name field
+- [ ] add proper confirm and error dialogs on the settings page
+- [ ] close user dropdown on click
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile
