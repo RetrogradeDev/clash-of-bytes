@@ -175,7 +175,7 @@ async function executePython(
 			// Load Pyodide if not already loaded. We have to do this like this because
 			// it's WASM and we can't import it like a normal module.
 			const script = document.createElement("script");
-			script.src = "https://cdn.jsdelivr.net/pyodide/v0.27.6/full/pyodide.js"; // TODO: 0.27.7 creates an error, idk
+			script.src = "https://cdn.jsdelivr.net/pyodide/v0.28.1/full/pyodide.js";
 			document.head.appendChild(script);
 
 			await new Promise((resolve, reject) => {

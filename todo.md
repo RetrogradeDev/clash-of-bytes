@@ -14,9 +14,11 @@
 - [ ] badges
 - [ ] Link accounts -> verified badge
 - [ ] settings
-  - [ ] account
+  - [x] account
   - [ ] linked accounts
 - [ ] make navbar 100% css
 - [ ] avatars
+- [ ] build script
+- [ ] use username plugin instead of name field
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile

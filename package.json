@@ -19,7 +19,6 @@
 		"lucide-react": "^0.517.0",
 		"next": "^15.4.5",
 		"prisma": "^6.13.0",
-		"pyodide": "^0.27.7",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"react-markdown": "^10.1.0"
