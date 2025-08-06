@@ -16,11 +16,12 @@
 - [ ] settings
   - [x] account
   - [x] linked accounts
+  - [ ] polish UI/UX
 - [ ] make navbar 100% css
 - [ ] avatars
 - [ ] build script
 - [ ] use username plugin instead of name field
 - [ ] add proper confirm and error dialogs on the settings page
-- [ ] close user dropdown on click
+- [x] close user dropdown on click
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile

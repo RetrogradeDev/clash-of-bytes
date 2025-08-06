@@ -2,20 +2,41 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "@/lib/auth-client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LogOutIcon, SettingsIcon, User2Icon } from "lucide-react";
 
 const ProfileDropdown = ({ userName }: { userName: string }) => {
 	const [isOpen, setIsOpen] = useState(false);
 
+	const clickHandler = (e: MouseEvent) => {
+		if (
+			isOpen &&
+			!document
+				.getElementById("profile-dropdown-button")
+				?.contains(e.target as Node)
+		) {
+			console.log("ew");
+			setIsOpen(false);
+		}
+	};
+
+	useEffect(() => {
+		document.addEventListener("click", clickHandler);
+		return () => {
+			document.removeEventListener("click", clickHandler);
+		};
+	}, [isOpen]);
+
 	return (
 		<div className="relative mr-[-1rem]">
 			<button
+				type="button"
+				id="profile-dropdown-button"
 				onClick={() => setIsOpen(!isOpen)}
 				className={`flex items-center space-x-2 p-4 ${
 					isOpen ? "bg-gray-500/20" : "hover:bg-gray-500/20"
-				} transition-colors`}
+				}`}
 				aria-haspopup="true"
 				aria-expanded={isOpen}
 			>
