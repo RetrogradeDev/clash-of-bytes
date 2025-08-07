@@ -8,51 +8,48 @@ import { AtomIcon } from "lucide-react";
 
 import { signUp } from "@/lib/auth-client";
 import { SocialAuthButtons } from "@/components/social-auth";
+import { useForm } from "react-hook-form";
+
+interface IFormValues {
+	username: string;
+	name: string;
+	email: string;
+	password: string;
+	confirmPassword: string;
+}
 
 export default function SignUpPage() {
-	const [username, setUsername] = useState("");
-	const [name, setName] = useState("");
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [confirmPassword, setConfirmPassword] = useState("");
+	const {
+		register,
+		handleSubmit,
+		setError,
+		getValues,
+		formState: { errors },
+	} = useForm<IFormValues>();
 	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
+
 	const router = useRouter();
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const submitHandler = async (data: IFormValues) => {
 		setIsLoading(true);
-		setError("");
 
-		if (!username.trim() || !email.trim() || !password || !confirmPassword) {
-			setError("All fields are required");
-			setIsLoading(false);
-			return;
-		}
-
-		if (username.length < 3 || username.length > 20) {
-			setError("Username must be between 3 and 20 characters");
-			setIsLoading(false);
-			return;
-		}
-
-		if (!/^[a-zA-Z0-9._-]+$/.test(username.trim())) {
-			setError(
-				"Username can only contain letters, numbers, dots, underscores, and hyphens",
-			);
-			setIsLoading(false);
-			return;
-		}
-
-		if (password !== confirmPassword) {
-			setError("Passwords do not match");
+		if (data.password !== data.confirmPassword) {
+			setError("confirmPassword", {
+				type: "manual",
+				message: "Passwords do not match",
+			});
 			setIsLoading(false);
 			return;
 		}
 
 		try {
 			await signUp.email(
-				{ email, password, username, name },
+				{
+					email: data.email,
+					password: data.password,
+					username: data.username,
+					name: data.name,
+				},
 				{
 					onSuccess: () => {
 						router.push("/");
@@ -61,12 +58,15 @@ export default function SignUpPage() {
 						}, 500);
 					},
 					onError: (ctx) => {
-						setError(ctx.error.message);
+						setError("root", { type: "manual", message: ctx.error.message });
 					},
 				},
 			);
 		} catch (error) {
-			setError("An unexpected error occurred");
+			setError("root", {
+				type: "manual",
+				message: "An unexpected error occurred",
+			});
 		} finally {
 			setIsLoading(false);
 		}
@@ -87,7 +87,7 @@ export default function SignUpPage() {
 							Create your account to start solving puzzles
 						</p>
 					</div>
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
 						<div>
 							<label
 								htmlFor="username"
@@ -98,12 +98,30 @@ export default function SignUpPage() {
 							<input
 								id="username"
 								type="text"
-								value={username}
-								onChange={(e) => setUsername(e.target.value)}
-								required
+								{...register("username", {
+									required: "Username is required",
+									minLength: {
+										value: 3,
+										message: "Username must be at least 3 characters",
+									},
+									maxLength: {
+										value: 20,
+										message: "Username cannot exceed 20 characters",
+									},
+									pattern: {
+										value: /^[a-zA-Z0-9_]+$/,
+										message:
+											"Username can only contain letters, numbers, and underscores",
+									},
+								})}
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="johndoe"
 							/>
+							{errors.username && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.username.message}
+								</p>
+							)}
 						</div>
 
 						<div>
@@ -116,12 +134,25 @@ export default function SignUpPage() {
 							<input
 								id="name"
 								type="text"
-								value={name}
-								onChange={(e) => setName(e.target.value)}
-								required
+								{...register("name", {
+									required: "Display name is required",
+									minLength: {
+										value: 2,
+										message: "Display name must be at least 2 characters",
+									},
+									maxLength: {
+										value: 50,
+										message: "Display name cannot exceed 50 characters",
+									},
+								})}
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="John Doe"
 							/>
+							{errors.name && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.name.message}
+								</p>
+							)}
 						</div>
 
 						<div>
@@ -134,12 +165,21 @@ export default function SignUpPage() {
 							<input
 								id="email"
 								type="email"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								required
+								{...register("email", {
+									required: "Email is required",
+									pattern: {
+										value: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
+										message: "Invalid email address",
+									},
+								})}
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="johndoe@example.com"
 							/>
+							{errors.email && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.email.message}
+								</p>
+							)}
 						</div>
 
 						<div>
@@ -152,12 +192,25 @@ export default function SignUpPage() {
 							<input
 								id="password"
 								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
+								{...register("password", {
+									required: "Password is required",
+									minLength: {
+										value: 6,
+										message: "Password must be at least 6 characters",
+									},
+									maxLength: {
+										value: 100,
+										message: "Password cannot exceed 100 characters",
+									},
+								})}
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="Create a password"
 							/>
+							{errors.password && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.password.message}
+								</p>
+							)}
 						</div>
 
 						<div>
@@ -170,16 +223,27 @@ export default function SignUpPage() {
 							<input
 								id="confirmPassword"
 								type="password"
-								value={confirmPassword}
-								onChange={(e) => setConfirmPassword(e.target.value)}
-								required
+								{...register("confirmPassword", {
+									required: "Confirm Password is required",
+									validate: (value) => {
+										const password = getValues("password");
+										return value === password || "Passwords do not match";
+									},
+								})}
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="Confirm your password"
 							/>
+							{errors.confirmPassword && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.confirmPassword.message}
+								</p>
+							)}
 						</div>
 
-						{error && (
-							<div className="text-red-400 text-sm text-center">{error}</div>
+						{errors.root && (
+							<div className="text-red-400 text-sm text-center">
+								{errors.root.message}
+							</div>
 						)}
 
 						<button
