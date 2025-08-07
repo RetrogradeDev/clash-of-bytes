@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSession, signOut } from "@/lib/auth-client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import { LogOutIcon, SettingsIcon, User2Icon } from "lucide-react";
 
@@ -13,86 +13,55 @@ const ProfileDropdown = ({
 	name: string;
 	userName: string;
 }) => {
-	const [isOpen, setIsOpen] = useState(false);
-
-	const clickHandler = (e: MouseEvent) => {
-		if (
-			isOpen &&
-			!document
-				.getElementById("profile-dropdown-button")
-				?.contains(e.target as Node)
-		) {
-			console.log("ew");
-			setIsOpen(false);
-		}
-	};
-
-	useEffect(() => {
-		document.addEventListener("click", clickHandler);
-		return () => {
-			document.removeEventListener("click", clickHandler);
-		};
-	}, [isOpen]);
-
 	return (
-		<div className="relative mr-[-1rem]">
-			<button
-				type="button"
-				id="profile-dropdown-button"
-				onClick={() => setIsOpen(!isOpen)}
-				className={`flex items-center space-x-2 p-4 ${
-					isOpen ? "bg-gray-500/20" : "hover:bg-gray-500/20"
-				}`}
+		<div className="relative group">
+			<div
+				className="cursor-pointer flex items-center space-x-2 p-4 group-hover:bg-[#212121] hover:bg-[#212121]"
+				tabIndex={0}
 				aria-haspopup="true"
-				aria-expanded={isOpen}
 			>
-				{/* TODO: add avatar */}
 				<span className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
 					<span className="text-white font-bold">
 						{name.charAt(0).toUpperCase()}
 					</span>
 				</span>
 				<span className="text-sm text-gray-400">{name}</span>
-			</button>
-
-			{isOpen && (
-				<div className="absolute right-0 w-48 bg-gray-500/20 rounded-none rounded-bl-lg shadow-lg border-l border-b border-gray-800">
-					<div className="py-2">
-						<Link
-							href={`/profile/${userName}`}
-							className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700"
-						>
-							<User2Icon className="w-4 h-4 mr-2" />
-							Profile
-						</Link>
-						<Link
-							href="/settings"
-							className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700"
-						>
-							<SettingsIcon className="w-4 h-4 mr-2" />
-							Settings
-						</Link>
-						<button
-							className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 w-full"
-							onClick={() => signOut()}
-						>
-							<LogOutIcon className="w-4 h-4 mr-2" />
-							Sign Out
-						</button>
-					</div>
+			</div>
+			<div className="hidden group-hover:block group-focus-within:block absolute top-16 right-0 w-48 bg-[#212121] rounded-none rounded-bl-lg shadow-xl border-l border-b border-gray-600 z-50">
+				<div className="py-2">
+					<Link
+						href={`/profile/${userName}`}
+						className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700"
+					>
+						<User2Icon className="w-4 h-4 mr-2" />
+						Profile
+					</Link>
+					<Link
+						href="/settings"
+						className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700"
+					>
+						<SettingsIcon className="w-4 h-4 mr-2" />
+						Settings
+					</Link>
+					<button
+						className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 w-full text-left"
+						onClick={() => signOut()}
+					>
+						<LogOutIcon className="w-4 h-4 mr-2" />
+						Sign Out
+					</button>
 				</div>
-			)}
+			</div>
 		</div>
 	);
 };
 
 export function Navbar() {
-	const [isOpen, setIsOpen] = useState(false);
 	const { data: session, isPending } = useSession();
 
 	return (
 		<nav className="bg-black/20 backdrop-blur-sm border-b border-white/10">
-			<div className="w-full px-4">
+			<div className="w-full">
 				<div className="flex items-center justify-between h-16">
 					<Link
 						href="/"
@@ -130,11 +99,11 @@ export function Navbar() {
 						</Link>
 					</div>
 					{/* Mobile navigation */}
-					<div className="md:hidden">
-						<button
-							onClick={() => setIsOpen(!isOpen)}
-							className="text-white/80 hover:text-white transition-colors p-2"
+					<div className="md:hidden group">
+						<div
+							className="text-white/80 hover:text-white transition-colors p-6"
 							aria-label="Toggle menu"
+							aria-haspopup="true"
 						>
 							<svg
 								className="w-6 h-6"
@@ -149,40 +118,34 @@ export function Navbar() {
 									d="M4 6h16M4 12h16M4 18h16"
 								/>
 							</svg>
-						</button>
+						</div>
 
-						{isOpen && (
-							<div className="absolute top-16 left-0 right-0 bg-black/90 backdrop-blur-sm border-b border-white/10 p-4 space-y-4">
-								<Link
-									href="/"
-									className="block text-white/80 hover:text-white transition-colors py-2"
-									onClick={() => setIsOpen(false)}
-								>
-									Home
-								</Link>
-								<Link
-									href="/puzzles"
-									className="block text-white/80 hover:text-white transition-colors py-2"
-									onClick={() => setIsOpen(false)}
-								>
-									Puzzles
-								</Link>
-								<Link
-									href="/submit"
-									className="block text-white/80 hover:text-white transition-colors py-2"
-									onClick={() => setIsOpen(false)}
-								>
-									Submit Puzzle
-								</Link>
-								<Link
-									href="/leaderboard"
-									className="block text-white/80 hover:text-white transition-colors py-2"
-									onClick={() => setIsOpen(false)}
-								>
-									Leaderboard
-								</Link>
-							</div>
-						)}
+						<div className="hidden group-focus-within:block group-hover:block absolute top-16 left-0 right-0 bg-black/90 backdrop-blur-sm border-b border-white/10 p-4 space-y-4">
+							<Link
+								href="/"
+								className="block text-white/80 hover:text-white transition-colors py-2"
+							>
+								Home
+							</Link>
+							<Link
+								href="/puzzles"
+								className="block text-white/80 hover:text-white transition-colors py-2"
+							>
+								Puzzles
+							</Link>
+							<Link
+								href="/submit"
+								className="block text-white/80 hover:text-white transition-colors py-2"
+							>
+								Submit Puzzle
+							</Link>
+							<Link
+								href="/leaderboard"
+								className="block text-white/80 hover:text-white transition-colors py-2"
+							>
+								Leaderboard
+							</Link>
+						</div>
 					</div>
 
 					<div className="flex items-center space-x-4">

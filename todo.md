@@ -17,13 +17,13 @@
   - [x] account
   - [x] linked accounts
   - [ ] polish UI/UX
-- [ ] make navbar 100% css
+- [x] make navbar 100% css
 - [ ] avatars
 - [ ] build script
 - [x] use username plugin instead of name field
 - [x] add proper confirm and error dialogs on the settings page
 - [ ] update code runner: run all tests at once, warmpup
-- [ ] properly use zod for our forms
+- [ ] properly use RHF for our forms
   - [ ] login
   - [ ] signup
   - [x] settings
