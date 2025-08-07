@@ -21,7 +21,7 @@
 - [ ] avatars
 - [ ] build script
 - [x] use username plugin instead of name field
-- [ ] add proper confirm and error dialogs on the settings page
+- [x] add proper confirm and error dialogs on the settings page
 - [ ] update code runner: run all tests at once, warmpup
 - [ ] properly use zod for our forms
 - [x] close user dropdown on click

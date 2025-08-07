@@ -34,12 +34,119 @@ const InputField = ({
 	);
 };
 
+const Dialog = ({ children }: { children: React.ReactNode }) => {
+	return (
+		<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+			<div className="bg-gray-800 rounded-lg p-6 shadow-lg w-full max-w-md">
+				{children}
+			</div>
+		</div>
+	);
+};
+
+const ConfirmDialog = ({
+	title,
+	message,
+	onConfirm,
+	onCancel,
+}: {
+	title: string;
+	message: string;
+	onConfirm: () => void;
+	onCancel: () => void;
+}) => {
+	return (
+		<Dialog>
+			<h2 className="text-lg font-bold mb-4">{title}</h2>
+			<p className="mb-6">{message}</p>
+			<div className="flex justify-end space-x-3">
+				<button
+					className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+					onClick={onCancel}
+				>
+					Cancel
+				</button>
+				<button
+					className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"
+					onClick={onConfirm}
+				>
+					Confirm
+				</button>
+			</div>
+		</Dialog>
+	);
+};
+
+const AlertDialog = ({
+	title,
+	message,
+	onConfirm,
+}: {
+	title: string;
+	message: string;
+	onConfirm: () => void;
+}) => {
+	return (
+		<Dialog>
+			<h2 className="text-lg font-bold mb-4">{title}</h2>
+			<p className="mb-6">{message}</p>
+			<div className="flex justify-end space-x-3">
+				<button
+					className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+					onClick={onConfirm}
+				>
+					OK
+				</button>
+			</div>
+		</Dialog>
+	);
+};
+
+const OptionDialog = ({
+	title,
+	message,
+	onConfirm,
+	onCancel,
+	options,
+}: {
+	title: string;
+	message: string;
+	onConfirm: (option: string) => void;
+	onCancel: () => void;
+	options: { label: string; value: string }[];
+}) => {
+	return (
+		<Dialog>
+			<h2 className="text-lg font-bold mb-4">{title}</h2>
+			<p className="mb-6">{message}</p>
+			<div className="flex justify-end space-x-3">
+				{options.map((option) => (
+					<button
+						key={option.value}
+						className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded"
+						onClick={() => onConfirm(option.value)}
+					>
+						{option.label}
+					</button>
+				))}
+				<button
+					className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded"
+					onClick={onCancel}
+				>
+					Cancel
+				</button>
+			</div>
+		</Dialog>
+	);
+};
+
 export default function Settings() {
 	const { data: session } = useSession();
 	const router = useRouter();
 	const [linkedAccounts, setLinkedAccounts] = useState<
 		{ provider: string; id: string; createdAt: Date }[]
 	>([]);
+	const [dialog, setDialog] = useState<React.ReactNode | null>(null);
 
 	const [username, setUsername] = useState("");
 	const [name, setName] = useState("");
@@ -202,18 +309,42 @@ export default function Settings() {
 					<button
 						type="button"
 						className="px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded transition"
-						onClick={() => {
-							let accountType = prompt(
-								"Enter the account type to link (slack/github):",
-							)?.trim();
-							// TODO
+						onClick={async () => {
+							const selectAccountType = () =>
+								new Promise<string | null>((resolve) => {
+									setDialog(
+										<OptionDialog
+											title="Link Account"
+											message="Select the account type to link:"
+											options={[
+												{ label: "Slack", value: "slack" },
+												{ label: "GitHub", value: "github" },
+											]}
+											onConfirm={(option) => {
+												setDialog(null);
+												resolve(option);
+											}}
+											onCancel={() => {
+												setDialog(null);
+												resolve(null);
+											}}
+										/>,
+									);
+								});
 
-							if (
-								!accountType ||
-								(accountType !== "slack" && accountType !== "github")
-							) {
-								alert(
-									"Invalid account type. Please enter 'slack' or 'github'.",
+							const accountType = await selectAccountType();
+
+							if (!accountType) {
+								return; // User cancelled
+							}
+
+							if (accountType !== "slack" && accountType !== "github") {
+								setDialog(
+									<AlertDialog
+										title="Invalid Account Type"
+										message="Please enter a valid account type (slack/github)."
+										onConfirm={() => setDialog(null)}
+									/>,
 								);
 								return;
 							}
@@ -259,11 +390,26 @@ export default function Settings() {
 									type="button"
 									className="ml-4 px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
 									onClick={async () => {
-										if (
-											confirm(
-												`Are you sure you want to unlink your ${account.provider} account?`,
-											)
-										) {
+										const confirmUnlink = () =>
+											new Promise<boolean>((resolve) => {
+												setDialog(
+													<ConfirmDialog
+														title="Unlink Account"
+														message={`Are you sure you want to unlink your ${account.provider} account?`}
+														onConfirm={() => {
+															setDialog(null);
+															resolve(true);
+														}}
+														onCancel={() => {
+															setDialog(null);
+															resolve(false);
+														}}
+													/>,
+												);
+											});
+
+										const continueUnlink = await confirmUnlink();
+										if (continueUnlink) {
 											try {
 												const result = await authClient.unlinkAccount({
 													providerId: account.provider,
@@ -280,8 +426,15 @@ export default function Settings() {
 												);
 											} catch (error) {
 												console.error("Error unlinking account:", error);
-												alert(
-													"An error occurred while unlinking your account. Please try again later.",
+												setDialog(
+													<AlertDialog
+														title="Error Unlinking Account"
+														message={
+															"An error occurred while unlinking your account: " +
+															(error as Error).message
+														}
+														onConfirm={() => setDialog(null)}
+													/>,
 												);
 											}
 										}
@@ -327,6 +480,8 @@ export default function Settings() {
 					</button>
 				</div>
 			)}
+
+			{dialog && dialog}
 		</div>
 	);
 }
