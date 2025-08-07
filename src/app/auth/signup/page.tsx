@@ -11,6 +11,7 @@ import { SocialAuthButtons } from "@/components/social-auth";
 
 export default function SignUpPage() {
 	const [username, setUsername] = useState("");
+	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
@@ -50,8 +51,8 @@ export default function SignUpPage() {
 		}
 
 		try {
-			const result = await signUp.email(
-				{ email: email.trim(), password, name: username.trim() },
+			await signUp.email(
+				{ email, password, username, name },
 				{
 					onSuccess: () => {
 						router.push("/");
@@ -101,7 +102,25 @@ export default function SignUpPage() {
 								onChange={(e) => setUsername(e.target.value)}
 								required
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
-								placeholder="Choose a username"
+								placeholder="johndoe"
+							/>
+						</div>
+
+						<div>
+							<label
+								htmlFor="name"
+								className="block text-sm font-medium text-white mb-2"
+							>
+								Display Name
+							</label>
+							<input
+								id="name"
+								type="text"
+								value={name}
+								onChange={(e) => setName(e.target.value)}
+								required
+								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
+								placeholder="John Doe"
 							/>
 						</div>
 
@@ -119,7 +138,7 @@ export default function SignUpPage() {
 								onChange={(e) => setEmail(e.target.value)}
 								required
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
-								placeholder="Enter your email"
+								placeholder="johndoe@example.com"
 							/>
 						</div>
 

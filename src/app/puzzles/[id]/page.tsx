@@ -41,14 +41,14 @@ async function getPuzzle(id: string): Promise<PublicPuzzle | null> {
 			author: {
 				select: {
 					id: true,
-					name: true,
+					username: true,
 				},
 			},
 			solutions: {
 				include: {
 					user: {
 						select: {
-							name: true,
+							username: true,
 						},
 					},
 				},
@@ -104,7 +104,7 @@ async function getUserSolutions(
 			userId: true,
 			user: {
 				select: {
-					name: true,
+					username: true,
 				},
 			},
 		},
@@ -154,9 +154,9 @@ export default async function PuzzlePage({
 									by{" "}
 									<Link
 										className="text-purple-400 hover:text-purple-300 underline"
-										href={`/profile/${puzzle.author.name}`}
+										href={`/profile/${puzzle.author.username}`}
 									>
-										@{puzzle.author.name}
+										@{puzzle.author.username}
 									</Link>
 								</span>
 								<span>•</span>

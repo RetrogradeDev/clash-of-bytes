@@ -36,7 +36,7 @@ async function getPuzzles(searchTerm?: string) {
 					score: true,
 					user: {
 						select: {
-							name: true,
+							username: true,
 						},
 					},
 				},

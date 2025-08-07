@@ -2,7 +2,7 @@
 
 import { authClient, useSession } from "@/lib/auth-client";
 import { id, se } from "date-fns/locale";
-import { CatIcon, PlusIcon } from "lucide-react";
+import { CatIcon, Loader2, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState, use } from "react";
 
@@ -42,33 +42,73 @@ export default function Settings() {
 	>([]);
 
 	const [username, setUsername] = useState("");
+	const [name, setName] = useState("");
 	const [usernameError, setUsernameError] = useState<string | null>(null);
+	const [nameError, setNameError] = useState<string | null>(null);
+
 	const [hasChanges, setHasChanges] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
 
 	const saveChanges = async () => {
 		if (!session) return;
+		setIsLoading(true);
+		setUsernameError(null);
+		setNameError(null);
+
+		let usernameErr = "";
+		let nameErr = "";
 
 		if (!/^[a-zA-Z0-9._-]+$/.test(username.trim())) {
-			setUsernameError(
-				"Username can only contain letters, numbers, dots, underscores, and hyphens",
-			);
-			return;
+			usernameErr =
+				"Username can only contain letters, numbers, dots, underscores, and hyphens";
 		}
 
-		const result = await authClient.updateUser({
-			name: username,
-		});
+		if (username.length < 3 || username.length > 20) {
+			usernameErr = "Username must be between 3 and 20 characters";
+		}
+
+		if (username !== session.user.username) {
+			const res = await authClient.isUsernameAvailable({ username });
+
+			if (!res.data?.available) {
+				usernameErr = "Username is already taken, please choose another.";
+			}
+		}
+
+		if (name.trim() === "") {
+			nameErr = "Display name cannot be empty.";
+		}
+
+		if (name.length < 3 || name.length > 50) {
+			nameErr = "Display name must be between 3 and 50 characters.";
+		}
+
+		if (usernameErr || nameErr) {
+			setUsernameError(usernameErr);
+			setNameError(nameErr);
+		}
+
+		let toUpdate: { username?: string; name?: string } = {};
+		if (!usernameErr) {
+			toUpdate.username = username;
+		}
+		if (!nameErr) {
+			toUpdate.name = name;
+		}
+
+		const result = await authClient.updateUser(toUpdate);
+
+		setIsLoading(false);
+		setHasChanges(false);
 
 		console.log("result", result);
 		if (result.error) {
-			setUsernameError(
-				result.error.message || "An error occurred while saving changes.",
-			);
+			let error =
+				result.error.message || "An error occurred while saving changes.";
+			setUsernameError(error.charAt(0).toUpperCase() + error.slice(1)); // some stupid person decided to use lowercase error messages
+			setNameError(error.charAt(0).toUpperCase() + error.slice(1));
 			return;
 		}
-
-		setHasChanges(false);
-		setUsernameError(null);
 	};
 
 	// For some reason this is needed
@@ -88,7 +128,8 @@ export default function Settings() {
 				redirectId.current = null;
 			}
 
-			setUsername(session.user.name);
+			setUsername(session.user.username!);
+			setName(session.user.name);
 			authClient.listAccounts().then((accounts) => {
 				if (accounts.error) {
 					console.error("Error fetching linked accounts:", accounts.error);
@@ -110,12 +151,15 @@ export default function Settings() {
 
 	useEffect(() => {
 		// Check if username has changed
-		if (session && session.user.name !== username) {
+		if (
+			session &&
+			(session.user.name !== name || session.user.username !== username)
+		) {
 			setHasChanges(true);
 		} else {
 			setHasChanges(false);
 		}
-	}, [username, session]);
+	}, [username, name, session]);
 
 	if (!session) {
 		return null;
@@ -133,6 +177,15 @@ export default function Settings() {
 					value={username}
 					onChange={(e) => setUsername(e.target.value)}
 					error={usernameError}
+				/>
+				<InputField
+					label="Display Name"
+					id="name"
+					type="text"
+					placeholder="John Doe"
+					value={name}
+					onChange={(e) => setName(e.target.value)}
+					error={nameError}
 				/>
 				<InputField
 					label="Email"
@@ -259,10 +312,18 @@ export default function Settings() {
 					</span>
 					<button
 						type="button"
-						className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded"
+						className="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 text-white rounded"
 						onClick={saveChanges}
+						disabled={isLoading}
 					>
-						Save Changes
+						{isLoading ? (
+							<span>
+								<Loader2 className="w-4 h-4 animate-spin inline-block" />
+								<span className="ml-2">Saving...</span>
+							</span>
+						) : (
+							"Save Changes"
+						)}
 					</button>
 				</div>
 			)}

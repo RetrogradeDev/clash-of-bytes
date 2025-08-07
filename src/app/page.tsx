@@ -21,7 +21,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 					score: true,
 					user: {
 						select: {
-							name: true,
+							username: true,
 						},
 					},
 				},
@@ -52,7 +52,7 @@ async function getFeaturedPuzzle(): Promise<PublicPuzzle> {
 						score: true,
 						user: {
 							select: {
-								name: true,
+								username: true,
 							},
 						},
 					},
@@ -92,7 +92,7 @@ async function getRecentPuzzles(): Promise<PublicPuzzle[]> {
 					score: true,
 					user: {
 						select: {
-							name: true,
+							username: true,
 						},
 					},
 				},

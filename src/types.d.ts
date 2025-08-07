@@ -5,7 +5,7 @@ type PublicPuzzle = {
 	mode: string; // "chars" | "runtime";
 	createdAt: Date;
 	author: {
-		name: string;
+		username: string;
 	};
 	testCases: Array<{ input: string; output: string }>;
 	solutions: Array<Solution>;
@@ -23,7 +23,7 @@ type Solution = {
 	userId: string;
 	language: string; // "python" | "javascript";
 	user: {
-		name: string;
+		username: string;
 	};
 	score: number;
 };

@@ -87,9 +87,9 @@ export function PuzzleLeaderboard({
 							<div>
 								<Link
 									className="text-purple-400 hover:text-purple-300 font-semibold"
-									href={`/users/${solution.user.name}`}
+									href={`/users/${solution.user.username}`}
 								>
-									@{solution.user.name}
+									@{solution.user.username}
 								</Link>
 							</div>
 						</div>

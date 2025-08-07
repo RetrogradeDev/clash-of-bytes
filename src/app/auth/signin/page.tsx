@@ -16,35 +16,49 @@ export default function SignInPage() {
 	const [error, setError] = useState("");
 	const router = useRouter();
 
+	const successHandler = () => {
+		const redirectUrl = new URLSearchParams(window.location.search).get(
+			"redirect",
+		);
+
+		if (redirectUrl) {
+			window.location.href = redirectUrl;
+		} else {
+			router.push("/");
+
+			setTimeout(() => {
+				window.location.href = "/";
+			}, 500);
+		}
+	};
+
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		setIsLoading(true);
 		setError("");
 
 		try {
-			await signIn.email(
-				{ email, password },
-				{
-					onSuccess: () => {
-						const redirectUrl = new URLSearchParams(window.location.search).get(
-							"redirect",
-						);
-
-						if (redirectUrl) {
-							window.location.href = redirectUrl;
-						} else {
-							router.push("/");
-
-							setTimeout(() => {
-								window.location.href = "/";
-							}, 500);
-						}
+			if (email.includes("@")) {
+				await signIn.email(
+					{ email, password },
+					{
+						onSuccess: successHandler,
+						onError: (ctx) => {
+							setError(ctx.error.message);
+						},
 					},
-					onError: (ctx) => {
-						setError(ctx.error.message);
+				);
+			} else {
+				await signIn.username(
+					{ username: email, password },
+					{
+						onSuccess: successHandler,
+						onError: (ctx) => {
+							setError(ctx.error.message);
+						},
 					},
-				},
-			);
+				);
+			}
 		} catch (error) {
 			setError("An unexpected error occurred");
 		} finally {
@@ -69,16 +83,16 @@ export default function SignInPage() {
 								htmlFor="email"
 								className="block text-sm font-medium text-white mb-2"
 							>
-								Email
+								Email or Username
 							</label>
 							<input
 								id="email"
-								type="email"
+								type="username"
 								value={email}
 								onChange={(e) => setEmail(e.target.value)}
 								required
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
-								placeholder="Enter your email"
+								placeholder="Enter your email or username"
 							/>
 						</div>
 

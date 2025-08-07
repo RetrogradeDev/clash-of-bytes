@@ -24,6 +24,7 @@ export async function generateMetadata({
 }
 
 async function getUserData(username: string): Promise<{
+	username: string;
 	name: string;
 	createdAt: Date;
 	puzzles: {
@@ -38,7 +39,7 @@ async function getUserData(username: string): Promise<{
 		solutions: {
 			score: number;
 			user: {
-				name: string;
+				username: string;
 			};
 		}[];
 	}[];
@@ -52,9 +53,10 @@ async function getUserData(username: string): Promise<{
 	}[];
 } | null> {
 	const user = await prisma.user.findUnique({
-		where: { name: username },
+		where: { username: username.toLowerCase() },
 		select: {
 			name: true,
+			username: true,
 			createdAt: true,
 			puzzles: {
 				select: {
@@ -69,7 +71,7 @@ async function getUserData(username: string): Promise<{
 							score: true,
 							user: {
 								select: {
-									name: true,
+									username: true,
 								},
 							},
 						},
@@ -121,6 +123,8 @@ export default async function ProfilePage({
 									{user.name}
 								</h1>
 								<p className="text-purple-300">
+									@{user.username}
+									<span className="text-gray-400 mx-2">|</span>
 									<ClockIcon className="inline size-4 mr-1" />
 									Joined{" "}
 									{formatDistanceToNow(user.createdAt, { addSuffix: true })}

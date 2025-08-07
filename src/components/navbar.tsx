@@ -6,7 +6,13 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { LogOutIcon, SettingsIcon, User2Icon } from "lucide-react";
 
-const ProfileDropdown = ({ userName }: { userName: string }) => {
+const ProfileDropdown = ({
+	name,
+	userName,
+}: {
+	name: string;
+	userName: string;
+}) => {
 	const [isOpen, setIsOpen] = useState(false);
 
 	const clickHandler = (e: MouseEvent) => {
@@ -43,10 +49,10 @@ const ProfileDropdown = ({ userName }: { userName: string }) => {
 				{/* TODO: add avatar */}
 				<span className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
 					<span className="text-white font-bold">
-						{userName.charAt(0).toUpperCase()}
+						{name.charAt(0).toUpperCase()}
 					</span>
 				</span>
-				<span className="text-sm text-gray-400">@{userName}</span>
+				<span className="text-sm text-gray-400">{name}</span>
 			</button>
 
 			{isOpen && (
@@ -183,7 +189,10 @@ export function Navbar() {
 						{isPending ? (
 							<div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
 						) : session ? (
-							<ProfileDropdown userName={session.user.name} />
+							<ProfileDropdown
+								name={session.user.name}
+								userName={session.user.username!}
+							/>
 						) : (
 							<div className="flex items-center space-x-2">
 								<Link

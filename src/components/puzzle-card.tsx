@@ -14,12 +14,12 @@ type PuzzleWithDetails = {
 	createdAt: Date;
 	mode: string; //"chars" | "runtime";
 	author: {
-		name: string;
+		username: string;
 	};
 	solutions: Array<{
 		score: number;
 		user: {
-			name: string;
+			username: string;
 		};
 	}>;
 	votes: Array<{ id: string }>;
@@ -59,7 +59,7 @@ export function PuzzleCard({ puzzle, featured = false }: PuzzleCardProps) {
 				</div>
 
 				<div className="flex items-center justify-between text-sm text-white/60">
-					<span>by @{puzzle.author.name}</span>
+					<span>by @{puzzle.author.username}</span>
 					<span className="flex items-center">
 						<ClockIcon className="size-4 mr-2" />
 						{formatDistanceToNow(puzzle.createdAt, { addSuffix: true })}

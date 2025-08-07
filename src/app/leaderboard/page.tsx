@@ -21,7 +21,7 @@ async function getLeaderboardData() {
 	// Get top solvers by total number of solutions
 	const topSolvers = await prisma.user.findMany({
 		select: {
-			name: true,
+			username: true,
 			solutions: {
 				select: {
 					score: true,
@@ -52,7 +52,7 @@ async function getLeaderboardData() {
 			mode: true,
 			author: {
 				select: {
-					name: true,
+					username: true,
 				},
 			},
 			votes: true,
@@ -133,8 +133,8 @@ export default async function LeaderboardPage() {
 					<div className="space-y-4">
 						{topSolvers.map((solver: any, index: number) => (
 							<Link
-								href={`/profile/${solver.name}`}
-								key={solver.name}
+								href={`/profile/${solver.username}`}
+								key={solver.username}
 								className="bg-gray-900/30 rounded-lg p-6 border border-gray-700 hover:border-purple-500/50 transition-colors block"
 							>
 								<div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ export default async function LeaderboardPage() {
 										</div>
 										<div>
 											<h3 className="text-lg font-semibold text-white">
-												{solver.name}
+												{solver.username}
 											</h3>
 											<p className="text-gray-300 text-sm">
 												{solver.solutions.length} solutions submitted
@@ -226,7 +226,7 @@ export default async function LeaderboardPage() {
 												{puzzle.description.length > 100 && "..."}
 											</p>
 											<p className="text-gray-400 text-sm">
-												by {puzzle.author.name} •{" "}
+												by {puzzle.author.username} •{" "}
 												{formatDistanceToNow(puzzle.createdAt, {
 													addSuffix: true,
 												})}
