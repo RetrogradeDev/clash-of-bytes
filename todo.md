@@ -24,6 +24,9 @@
 - [x] add proper confirm and error dialogs on the settings page
 - [ ] update code runner: run all tests at once, warmpup
 - [ ] properly use zod for our forms
+  - [ ] login
+  - [ ] signup
+  - [x] settings
 - [x] close user dropdown on click
 - [x] Add titles and metadata
 - [x] Fix auth problems on mobile

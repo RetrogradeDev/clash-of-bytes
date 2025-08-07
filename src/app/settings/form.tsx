@@ -5,16 +5,38 @@ import { id, se } from "date-fns/locale";
 import { CatIcon, Loader2, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useEffect, useState, use } from "react";
+import {
+	FieldError,
+	SubmitHandler,
+	useForm,
+	UseFormRegister,
+} from "react-hook-form";
+
+interface IFormValues {
+	username: string;
+	name: string;
+	email: string;
+}
 
 const InputField = ({
-	label,
 	id,
+	label,
+	register,
+	registerProps,
 	error,
 	...props
 }: {
+	id: "username" | "name" | "email";
 	label: string;
-	id: string;
-	error: string | null;
+	register: UseFormRegister<IFormValues>;
+	error?: string;
+	registerProps: {
+		required?: boolean;
+		readOnly?: boolean;
+		minLength?: number;
+		maxLength?: number;
+		pattern?: RegExp;
+	};
 } & React.InputHTMLAttributes<HTMLInputElement>) => {
 	return (
 		<div className="mb-4">
@@ -22,10 +44,11 @@ const InputField = ({
 			<input
 				id={id}
 				className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded text-white placeholder-white/50 focus:outline-none focus:border-purple-400 read-only:text-gray-500 read-only:cursor-not-allowed read-only:focus:border-gray-500"
+				{...register(id, registerProps)}
 				{...props}
 			/>
 			{error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-			{props.readOnly && (
+			{registerProps.readOnly && (
 				<p className="text-sm text-gray-500 mt-1">
 					This field is read-only and cannot be changed.
 				</p>
@@ -140,6 +163,29 @@ const OptionDialog = ({
 	);
 };
 
+const makeErrorVerbose = (error?: FieldError) => {
+	if (!error) return "";
+
+	const errorTarget = error.ref?.id || error.ref?.name || "field";
+
+	switch (error.type) {
+		case "required":
+			return "This field is required.";
+		case "minLength":
+			const minLength = 3; // TODO: Find form validation minLength
+			return `Minimum length is ${minLength} characters.`;
+		case "maxLength":
+			const maxLength = 20; // TODO: Find form validation maxLength
+			return `Maximum length is ${maxLength} characters.`;
+		case "pattern":
+			if (errorTarget === "username")
+				return "Username can only contain letters, numbers, and underscores.";
+			return "Invalid format.";
+		default:
+			return error.message || "An unexpected error occurred.";
+	}
+};
+
 export default function Settings() {
 	const { data: session } = useSession();
 	const router = useRouter();
@@ -148,72 +194,86 @@ export default function Settings() {
 	>([]);
 	const [dialog, setDialog] = useState<React.ReactNode | null>(null);
 
-	const [username, setUsername] = useState("");
-	const [name, setName] = useState("");
-	const [usernameError, setUsernameError] = useState<string | null>(null);
-	const [nameError, setNameError] = useState<string | null>(null);
+	const {
+		register,
+		formState: { errors },
+		setError,
+		setValue,
+		handleSubmit,
+	} = useForm<IFormValues>({
+		mode: "onBlur",
+		criteriaMode: "all",
+		reValidateMode: "onBlur",
+		defaultValues: {
+			username: session?.user.username || "",
+			name: session?.user.name || "",
+			email: session?.user.email || "",
+		},
+	});
 
-	const [hasChanges, setHasChanges] = useState(false);
+	const onSubmit: SubmitHandler<IFormValues> = async (data) => {
+		await saveChanges(data);
+	};
+
 	const [isLoading, setIsLoading] = useState(false);
 
-	const saveChanges = async () => {
+	const saveChanges = async (data: IFormValues) => {
 		if (!session) return;
 		setIsLoading(true);
-		setUsernameError(null);
-		setNameError(null);
-
-		let usernameErr = "";
-		let nameErr = "";
-
-		if (!/^[a-zA-Z0-9._-]+$/.test(username.trim())) {
-			usernameErr =
-				"Username can only contain letters, numbers, dots, underscores, and hyphens";
-		}
-
-		if (username.length < 3 || username.length > 20) {
-			usernameErr = "Username must be between 3 and 20 characters";
-		}
-
-		if (username !== session.user.username) {
-			const res = await authClient.isUsernameAvailable({ username });
-
-			if (!res.data?.available) {
-				usernameErr = "Username is already taken, please choose another.";
-			}
-		}
-
-		if (name.trim() === "") {
-			nameErr = "Display name cannot be empty.";
-		}
-
-		if (name.length < 3 || name.length > 50) {
-			nameErr = "Display name must be between 3 and 50 characters.";
-		}
-
-		if (usernameErr || nameErr) {
-			setUsernameError(usernameErr);
-			setNameError(nameErr);
-		}
 
 		let toUpdate: { username?: string; name?: string } = {};
-		if (!usernameErr) {
-			toUpdate.username = username;
+		if (!errors.username && data.username !== session.user.username) {
+			toUpdate.username = data.username;
 		}
-		if (!nameErr) {
-			toUpdate.name = name;
+		if (!errors.name && data.name !== session.user.name) {
+			toUpdate.name = data.name;
 		}
 
 		const result = await authClient.updateUser(toUpdate);
 
 		setIsLoading(false);
-		setHasChanges(false);
 
 		console.log("result", result);
 		if (result.error) {
-			let error =
-				result.error.message || "An error occurred while saving changes.";
-			setUsernameError(error.charAt(0).toUpperCase() + error.slice(1)); // some stupid person decided to use lowercase error messages
-			setNameError(error.charAt(0).toUpperCase() + error.slice(1));
+			if (toUpdate.username && toUpdate.name) {
+				// Retry both
+				let result = await authClient.updateUser({
+					name: toUpdate.name,
+				});
+
+				if (result.error) {
+					setError("name", {
+						type: "manual",
+						message:
+							result.error.message || "An error occurred while saving changes.",
+					});
+				}
+
+				result = await authClient.updateUser({
+					username: toUpdate.username,
+				});
+
+				if (result.error) {
+					setError("username", {
+						type: "manual",
+						message:
+							result.error.message || "An error occurred while saving changes.",
+					});
+				}
+			} else if (toUpdate.username) {
+				setError("username", {
+					type: "manual",
+					message:
+						result.error.message || "An error occurred while saving changes.",
+				});
+			} else if (toUpdate.name) {
+				setError("name", {
+					type: "manual",
+					message:
+						result.error.message || "An error occurred while saving changes.",
+				});
+			}
+
 			return;
 		}
 	};
@@ -235,8 +295,10 @@ export default function Settings() {
 				redirectId.current = null;
 			}
 
-			setUsername(session.user.username!);
-			setName(session.user.name);
+			setValue("username", session.user.username!);
+			setValue("name", session.user.name);
+			setValue("email", session.user.email);
+
 			authClient.listAccounts().then((accounts) => {
 				if (accounts.error) {
 					console.error("Error fetching linked accounts:", accounts.error);
@@ -256,53 +318,65 @@ export default function Settings() {
 		}
 	}, [session, router]);
 
-	useEffect(() => {
-		// Check if username has changed
-		if (
-			session &&
-			(session.user.name !== name || session.user.username !== username)
-		) {
-			setHasChanges(true);
-		} else {
-			setHasChanges(false);
-		}
-	}, [username, name, session]);
-
 	if (!session) {
 		return null;
 	}
 
 	return (
 		<div>
-			<div>
+			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
 				<h1 className="text-2xl font-bold mb-2">Account</h1>
 				<InputField
 					label="Username"
 					id="username"
 					type="text"
 					placeholder="johndoe"
-					value={username}
-					onChange={(e) => setUsername(e.target.value)}
-					error={usernameError}
+					register={register}
+					error={makeErrorVerbose(errors.username)}
+					registerProps={{
+						required: true,
+						minLength: 3,
+						maxLength: 20,
+						pattern: /^[a-zA-Z0-9_]+$/,
+					}}
 				/>
 				<InputField
 					label="Display Name"
 					id="name"
 					type="text"
 					placeholder="John Doe"
-					value={name}
-					onChange={(e) => setName(e.target.value)}
-					error={nameError}
+					register={register}
+					error={makeErrorVerbose(errors.name)}
+					registerProps={{
+						required: true,
+						minLength: 3,
+						maxLength: 20,
+					}}
 				/>
 				<InputField
 					label="Email"
 					id="email"
 					type="email"
 					readOnly
-					value={session.user.email}
-					error={null}
+					register={register}
+					registerProps={{ readOnly: true }}
 				/>
-			</div>
+
+				<button
+					type="submit"
+					className="px-4 py-2 mb-6 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 text-white rounded"
+					disabled={isLoading}
+				>
+					{isLoading ? (
+						<span>
+							<Loader2 className="w-4 h-4 animate-spin inline-block" />
+							<span className="ml-2">Saving...</span>
+						</span>
+					) : (
+						"Save Changes"
+					)}
+				</button>
+			</form>
 			<div>
 				<div className="flex justify-between items-center mb-4">
 					<h1 className="text-2xl font-bold">Linked Accounts</h1>
@@ -457,29 +531,6 @@ export default function Settings() {
 					</div>
 				)}
 			</div>
-
-			{hasChanges && (
-				<div className="fixed bottom-5 left-5 right-5 bg-gray-800 p-4 flex justify-between items-center rounded-xl border border-gray-700">
-					<span className="text-white">
-						You have unsaved changes to your account settings.
-					</span>
-					<button
-						type="button"
-						className="px-4 py-2 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 text-white rounded"
-						onClick={saveChanges}
-						disabled={isLoading}
-					>
-						{isLoading ? (
-							<span>
-								<Loader2 className="w-4 h-4 animate-spin inline-block" />
-								<span className="ml-2">Saving...</span>
-							</span>
-						) : (
-							"Save Changes"
-						)}
-					</button>
-				</div>
-			)}
 
 			{dialog && dialog}
 		</div>
