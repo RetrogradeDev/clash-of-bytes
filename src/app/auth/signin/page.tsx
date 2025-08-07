@@ -8,12 +8,21 @@ import { UserLockIcon } from "lucide-react";
 
 import { signIn } from "@/lib/auth-client";
 import { SocialAuthButtons } from "@/components/social-auth";
+import { useForm } from "react-hook-form";
+
+interface IFormValues {
+	email: string;
+	password: string;
+}
 
 export default function SignInPage() {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
+	const {
+		register,
+		handleSubmit,
+		setError,
+		formState: { errors },
+	} = useForm<IFormValues>();
 	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState("");
 	const router = useRouter();
 
 	const successHandler = () => {
@@ -32,35 +41,36 @@ export default function SignInPage() {
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const submitHandler = async (data: IFormValues) => {
 		setIsLoading(true);
-		setError("");
 
 		try {
-			if (email.includes("@")) {
+			if (data.email.includes("@")) {
 				await signIn.email(
-					{ email, password },
+					{ email: data.email, password: data.password },
 					{
 						onSuccess: successHandler,
 						onError: (ctx) => {
-							setError(ctx.error.message);
+							setError("root", { type: "manual", message: ctx.error.message });
 						},
 					},
 				);
 			} else {
 				await signIn.username(
-					{ username: email, password },
+					{ username: data.email, password: data.password },
 					{
 						onSuccess: successHandler,
 						onError: (ctx) => {
-							setError(ctx.error.message);
+							setError("root", { type: "manual", message: ctx.error.message });
 						},
 					},
 				);
 			}
 		} catch (error) {
-			setError("An unexpected error occurred");
+			setError("root", {
+				type: "manual",
+				message: "An unexpected error occurred",
+			});
 		} finally {
 			setIsLoading(false);
 		}
@@ -77,7 +87,7 @@ export default function SignInPage() {
 						<h1 className="text-3xl font-bold text-white mb-2">Welcome Back</h1>
 						<p className="text-purple-300">Sign in to your account</p>
 					</div>
-					<form onSubmit={handleSubmit} className="space-y-6">
+					<form onSubmit={handleSubmit(submitHandler)} className="space-y-6">
 						<div>
 							<label
 								htmlFor="email"
@@ -88,12 +98,17 @@ export default function SignInPage() {
 							<input
 								id="email"
 								type="username"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								required
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="Enter your email or username"
+								{...register("email", {
+									required: "Email or username is required",
+								})}
 							/>
+							{errors.email && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.email.message}
+								</p>
+							)}
 						</div>
 
 						<div>
@@ -106,16 +121,21 @@ export default function SignInPage() {
 							<input
 								id="password"
 								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
 								className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-purple-400"
 								placeholder="Enter your password"
+								{...register("password", { required: "Password is required" })}
 							/>
+							{errors.password && (
+								<p className="text-red-400 text-sm mt-1">
+									{errors.password.message}
+								</p>
+							)}
 						</div>
 
-						{error && (
-							<div className="text-red-400 text-sm text-center">{error}</div>
+						{errors.root && (
+							<div className="text-red-400 text-sm text-center">
+								{errors.root.message}
+							</div>
 						)}
 
 						<button
