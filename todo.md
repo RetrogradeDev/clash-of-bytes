@@ -19,7 +19,7 @@
   - [ ] polish UI/UX
 - [x] make navbar 100% css
 - [ ] avatars
-- [ ] build script
+- [x] build script
 - [x] use username plugin instead of name field
 - [x] add proper confirm and error dialogs on the settings page
 - [ ] update code runner: run all tests at once, warmpup
