@@ -185,6 +185,13 @@ async function calculateScore(
 	const totalTime =
 		sortedTimes.reduce((acc, t) => acc + t, 0) / sortedTimes.length;
 
+	// Only keep stdout between _START_STDOUT$ and _END_STDOUT$
+	const startIndex = stdout.indexOf("_START_STDOUT$");
+	const endIndex = stdout.indexOf("_END_STDOUT$");
+	if (startIndex !== -1 && endIndex !== -1) {
+		stdout = stdout.substring(startIndex + "_START_STDOUT$".length, endIndex);
+	}
+
 	return [totalTime, stdout, stderr];
 }
 
@@ -197,7 +204,11 @@ export async function runTestCases(data: {
 	try {
 		const results = [];
 
-		const testCasePromises = data.testCases.map(async (testCase) => {
+		const testCasePromises = data.testCases.map(async (_testCase) => {
+			const testCase = {
+				..._testCase,
+				id: Math.random().toString(36).substring(2, 15), // Generate a unique ID for the test case
+			};
 			if (!testCase.input.trim() || !testCase.output.trim()) {
 				return null;
 			}
@@ -214,18 +225,48 @@ export async function runTestCases(data: {
 			}
 
 			const finalCode = `
-${data.code}
-
 ${
 	data.language === "python"
-		? `false = False
+		? `import time
+false = False
 true = True`
 		: ""
 }
 
+${
+	data.language === "javascript"
+		? `function solve_${testCase.id}(input){\n${data.code}\nreturn solve(input);}`
+		: `def solve_${testCase.id}(input):\n\t${data.code.replace(
+				/\n/g,
+				"\n\t",
+		  )}\n\treturn solve(input)`
+}
+
+solve_${testCase.id}(${testCase.input})
+
+${
+	data.language === "python"
+		? "startTime = time.time_ns()"
+		: "const startTime = process.hrtime.bigint()"
+}
+solve_${testCase.id}(${testCase.input})
+solve_${testCase.id}(${testCase.input})
+solve_${testCase.id}(${testCase.input})
+${data.language === "javascript" ? "console.log" : "print"}("_TIME$" + ${
+				data.language === "python" ? "str" : ""
+			}(${
+				data.language === "javascript"
+					? "Number(process.hrtime.bigint()"
+					: "(time.time_ns()"
+			} - startTime) / 3000000))
+
+${data.language === "javascript" ? "console.log" : "print"}("_START_STDOUT$")
 ${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
 				data.language === "javascript" ? "JSON.stringify(" : "str("
-			}solve(${testCase.input})))`;
+			}solve_${testCase.id}(${testCase.input})))
+${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")`;
+
+			console.log("Final code for test case:", finalCode);
 
 			const [time, stdout, stderr] = await calculateScore(
 				finalCode,
@@ -275,7 +316,7 @@ ${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
 				actual: resolvedOutput,
 				output,
 				error: stderr || null,
-				time: Math.round(time * 1000) / 1000, // Round to 1ns
+				time: Math.round(time * 10000) / 10000, // Round to 0.0001ms
 			};
 		});
 

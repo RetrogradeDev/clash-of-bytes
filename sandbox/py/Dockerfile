@@ -3,10 +3,10 @@ FROM python:3.12-alpine
 WORKDIR /app
 
 # Copy runner script
-COPY runner.py .
+COPY runner.sh .
 
 # Prevent writing to FS
 RUN adduser -D sandbox && chown -R sandbox /app
 USER sandbox
 
-ENTRYPOINT ["python", "runner.py"]
+ENTRYPOINT ["sh", "runner.sh"]

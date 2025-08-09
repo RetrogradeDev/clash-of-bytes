@@ -1,9 +1,9 @@
 FROM node:20-alpine
 
 WORKDIR /app
-COPY runner.js .
+COPY runner.sh .
 
 RUN adduser -D sandbox && chown -R sandbox /app
 USER sandbox
 
-ENTRYPOINT ["node", "runner.js"]
+ENTRYPOINT ["sh", "runner.sh"]

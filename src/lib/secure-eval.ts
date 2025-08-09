@@ -35,6 +35,7 @@ export function secureJsEval(code: string): Promise<[number, string, string]> {
 
 		docker.on("close", (code) => {
 			const allData = stdout.split("\n");
+			console.log("All data received:", allData);
 			const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
 			if (timeLines.length > 1) {
 				return reject(
