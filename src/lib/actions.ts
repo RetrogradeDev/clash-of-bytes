@@ -141,58 +141,75 @@ async function calculateScore(
 	code: string,
 	language: string,
 	benchruns: number = 1,
-): Promise<[number, string, string]> {
+): Promise<[number[], string[], string]> {
 	// For runtime mode, we need to measure the execution time
 	let stdout: string = "";
 	let stderr: string = "";
-	let times: number[] = [];
+	let times: number[][] = [];
 
 	const promises = Array.from({ length: benchruns }, async () => {
 		try {
 			if (language === "javascript") {
 				const [execTime, execStdout, execStderr] = await secureJsEval(code);
-				return { time: execTime, stdout: execStdout, stderr: execStderr };
+				return { times: execTime, stdout: execStdout, stderr: execStderr };
 			} else if (language === "python") {
 				const [execTime, execStdout, execStderr] = await securePyEval(code);
-				return { time: execTime, stdout: execStdout, stderr: execStderr };
+				return { times: execTime, stdout: execStdout, stderr: execStderr };
 			}
 
-			return { time: 0, stdout: "", stderr: "" };
+			return { times: [0], stdout: "", stderr: "" };
 		} catch (error) {
 			console.error("Error executing code:", error);
-			return { time: 0, stdout: "", stderr: "" };
+			return { times: [0], stdout: "", stderr: "" };
 		}
 	});
 
 	const results = await Promise.all(promises);
 
 	for (const result of results) {
-		times.push(result.time);
+		times.push(result.times);
 		if (result.stdout) stdout = result.stdout;
-		if (result.stderr) stderr = result.stderr;
+		if (result.stderr) stderr = result.stderr; // TODO: Per test case stderr handling
 	}
 
 	console.log("Execution times:", times);
 
-	let sortedTimes = times.filter((t) => !isNaN(t)).sort((a, b) => a - b);
-	// Only keep the fastest 2 times
-	if (sortedTimes.length > 2) {
-		sortedTimes = sortedTimes.slice(0, 2);
+	const sortedTimes: number[][] = [];
+
+	for (const timesSet of times) {
+		let sortedTime = timesSet.filter((t) => !isNaN(t)).sort((a, b) => a - b);
+		// Only keep the fastest 2 times
+		if (sortedTime.length > 2) {
+			sortedTime = sortedTime.slice(0, 2);
+		}
+		sortedTimes.push(sortedTime);
 	}
 
 	console.log("Sorted times after removing slowest:", sortedTimes);
 
-	const totalTime =
-		sortedTimes.reduce((acc, t) => acc + t, 0) / sortedTimes.length;
+	const totalTime = sortedTimes.map(
+		(st) => st.reduce((acc, t) => acc + t, 0) / st.length,
+	);
 
-	// Only keep stdout between _START_STDOUT$ and _END_STDOUT$
-	const startIndex = stdout.indexOf("_START_STDOUT$");
-	const endIndex = stdout.indexOf("_END_STDOUT$");
-	if (startIndex !== -1 && endIndex !== -1) {
-		stdout = stdout.substring(startIndex + "_START_STDOUT$".length, endIndex);
+	// Extract all stdout between _START_STDOUT$ and _END_STDOUT$ and return as an array
+	const outputs: string[] = [];
+	let searchStart = 0;
+	while (true) {
+		const startIndex = stdout.indexOf("_START_STDOUT$", searchStart);
+		const endIndex = stdout.indexOf("_END_STDOUT$", startIndex + 1);
+		if (startIndex !== -1 && endIndex !== -1) {
+			const output = stdout.substring(
+				startIndex + "_START_STDOUT$".length,
+				endIndex,
+			);
+			outputs.push(output);
+			searchStart = endIndex + "_END_STDOUT$".length;
+		} else {
+			break;
+		}
 	}
 
-	return [totalTime, stdout, stderr];
+	return [totalTime, outputs, stderr];
 }
 
 export async function runTestCases(data: {
@@ -202,77 +219,85 @@ export async function runTestCases(data: {
 	bench: boolean;
 }) {
 	try {
-		const results = [];
-
-		const testCasePromises = data.testCases.map(async (_testCase) => {
-			const testCase = {
-				..._testCase,
-				id: Math.random().toString(36).substring(2, 15), // Generate a unique ID for the test case
-			};
-			if (!testCase.input.trim() || !testCase.output.trim()) {
-				return null;
-			}
-
-			if (!testCase.input.startsWith("[") && !testCase.input.startsWith('"')) {
-				// Make sure it's a string
-				if (
-					isNaN(parseFloat(testCase.input)) &&
-					testCase.input !== "true" &&
-					testCase.input !== "false"
-				) {
-					testCase.input = `"${testCase.input}"`;
+		const testCases = data.testCases
+			.map((testCase) => {
+				if (!testCase.input.trim() || !testCase.output.trim()) {
+					return null;
 				}
-			}
 
-			const finalCode = `
-${
-	data.language === "python"
-		? `import time
-false = False
-true = True`
-		: ""
-}
+				if (
+					!testCase.input.startsWith("[") &&
+					!testCase.input.startsWith('"')
+				) {
+					// Make sure it's a string
+					if (
+						isNaN(parseFloat(testCase.input)) &&
+						testCase.input !== "true" &&
+						testCase.input !== "false"
+					) {
+						testCase.input = `"${testCase.input}"`;
+					}
+				}
 
-${
-	data.language === "javascript"
-		? `function solve_${testCase.id}(input){\n${data.code}\nreturn solve(input);}`
-		: `def solve_${testCase.id}(input):\n\t${data.code.replace(
-				/\n/g,
-				"\n\t",
-		  )}\n\treturn solve(input)`
-}
+				return testCase;
+			})
+			.filter((tc) => tc !== null);
 
-solve_${testCase.id}(${testCase.input})
+		const codes = [];
+
+		for (const testCase of testCases) {
+			codes.push(`
+${data.language === "javascript" ? "console.log" : "print"}("_START_STDOUT$")
+${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
+				data.language === "javascript" ? "JSON.stringify(" : "str("
+			}solve(${testCase.input})))
+${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")
+solve(${testCase.input})
 
 ${
 	data.language === "python"
 		? "startTime = time.time_ns()"
-		: "const startTime = process.hrtime.bigint()"
+		: "startTime = process.hrtime.bigint()"
 }
-solve_${testCase.id}(${testCase.input})
-solve_${testCase.id}(${testCase.input})
-solve_${testCase.id}(${testCase.input})
+solve(${testCase.input})
+solve(${testCase.input})
+solve(${testCase.input})
 ${data.language === "javascript" ? "console.log" : "print"}("_TIME$" + ${
 				data.language === "python" ? "str" : ""
 			}(${
 				data.language === "javascript"
 					? "Number(process.hrtime.bigint()"
 					: "(time.time_ns()"
-			} - startTime) / 3000000))
+			} - startTime) / 3000000))`);
+		}
 
-${data.language === "javascript" ? "console.log" : "print"}("_START_STDOUT$")
-${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
-				data.language === "javascript" ? "JSON.stringify(" : "str("
-			}solve_${testCase.id}(${testCase.input})))
-${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")`;
+		const finalCode = `
+${
+	data.language === "python"
+		? `import time
+false = False
+true = True`
+		: "let startTime;"
+}
 
-			console.log("Final code for test case:", finalCode);
+${data.code}
 
-			const [time, stdout, stderr] = await calculateScore(
-				finalCode,
-				data.language,
-				data.bench ? 3 : 1, // Run multiple times if benchmarking
-			);
+${codes.join("\n")}`;
+
+		console.log("Final code for test case:", finalCode);
+
+		const [times, stdouts, stderr] = await calculateScore(
+			finalCode,
+			data.language,
+			data.bench ? 3 : 1, // Run multiple times if benchmarking
+		);
+
+		const results = [];
+
+		for (let i = 0; i < testCases.length; i++) {
+			const testCase = testCases[i];
+			const stdout = stdouts[i] || "";
+			const time = times[i] || 9999; // Default to 9999ms
 
 			let resolvedOutput =
 				stdout
@@ -309,7 +334,7 @@ ${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")`;
 
 			console.log("Resolved output:", resolvedOutput, "Expected:", expected);
 
-			return {
+			results.push({
 				passed: resolvedOutput === expected,
 				input: testCase.input,
 				expected: testCase.output,
@@ -317,11 +342,8 @@ ${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")`;
 				output,
 				error: stderr || null,
 				time: Math.round(time * 10000) / 10000, // Round to 0.0001ms
-			};
-		});
-
-		const testResults = await Promise.all(testCasePromises);
-		results.push(...testResults.filter((result) => result !== null));
+			});
+		}
 
 		return { success: true, results };
 	} catch (error) {

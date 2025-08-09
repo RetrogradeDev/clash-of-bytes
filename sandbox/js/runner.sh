@@ -4,7 +4,7 @@
 code=$(cat)
 
 # Timeout in seconds
-TIMEOUT=5
+TIMEOUT=20
 
 echo "$code" | timeout "$TIMEOUT" node -e "$(cat)"
 

@@ -1,7 +1,9 @@
 import { spawn } from "child_process";
 
-export function secureJsEval(code: string): Promise<[number, string, string]> {
-	return new Promise<[number, string, string]>((resolve, reject) => {
+export function secureJsEval(
+	code: string,
+): Promise<[number[], string, string]> {
+	return new Promise<[number[], string, string]>((resolve, reject) => {
 		const docker = spawn(
 			"docker",
 			[
@@ -37,11 +39,6 @@ export function secureJsEval(code: string): Promise<[number, string, string]> {
 			const allData = stdout.split("\n");
 			console.log("All data received:", allData);
 			const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
-			if (timeLines.length > 1) {
-				return reject(
-					new Error("Multiple time markers detected - potential cheating"),
-				);
-			}
 
 			console.log("All data:", allData);
 			console.log("Time lines:", timeLines);
@@ -49,25 +46,26 @@ export function secureJsEval(code: string): Promise<[number, string, string]> {
 			console.log("Stdout:", stdout);
 			console.log("Stderr:", stderr);
 
-			const timeLine = timeLines[0];
-			const timeMs = timeLine
-				? parseFloat(timeLine.replace("_TIME$", "").trim())
-				: 9999;
+			const timesMs = timeLines.map((line) =>
+				parseFloat(line.replace("_TIME$", "").trim()),
+			);
 			stdout = allData.filter((line) => !line.startsWith("_TIME$")).join("\n");
 
-			console.log("Parsed time:", timeMs);
+			console.log("Parsed time:", timesMs);
 
 			if (code !== 0) {
 				return reject(new Error(`Docker exited with code ${code}: ${stderr}`));
 			}
 
-			resolve([timeMs, stdout.trim(), stderr.trim()]);
+			resolve([timesMs, stdout.trim(), stderr.trim()]);
 		});
 	});
 }
 
-export function securePyEval(code: string): Promise<[number, string, string]> {
-	return new Promise<[number, string, string]>((resolve, reject) => {
+export function securePyEval(
+	code: string,
+): Promise<[number[], string, string]> {
+	return new Promise<[number[], string, string]>((resolve, reject) => {
 		const docker = spawn(
 			"docker",
 			[
@@ -102,21 +100,18 @@ export function securePyEval(code: string): Promise<[number, string, string]> {
 		docker.on("close", (code) => {
 			const allData = stdout.split("\n");
 			const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
-			if (timeLines.length > 1) {
-				return reject(
-					new Error("Multiple time markers detected - potential cheating"),
-				);
-			}
 
-			const timeLine = timeLines[0];
-			const timeMs = timeLine ? parseFloat(timeLine.slice(6, -1)) : 9999;
+			const timesMs =
+				timeLines.length > 0
+					? timeLines.map((line) => parseFloat(line.slice(6, -1)))
+					: [9999];
 			stdout = allData.filter((line) => !line.startsWith("_TIME$")).join("\n");
 
 			if (code !== 0) {
 				return reject(new Error(`Docker exited with code ${code}: ${stderr}`));
 			}
 
-			resolve([timeMs, stdout.trim(), stderr.trim()]);
+			resolve([timesMs, stdout.trim(), stderr.trim()]);
 		});
 	});
 }
