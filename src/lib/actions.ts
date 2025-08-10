@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { secureJsEval, securePyEval } from "./secure-eval";
+import { javascriptRunner, pythonRunner } from "./secure-eval";
 
 export async function createPuzzle(data: {
 	title: string;
@@ -150,10 +150,13 @@ async function calculateScore(
 	const promises = Array.from({ length: benchruns }, async () => {
 		try {
 			if (language === "javascript") {
-				const [execTime, execStdout, execStderr] = await secureJsEval(code);
+				const [execTime, execStdout, execStderr] =
+					await javascriptRunner.runCode(code);
 				return { times: execTime, stdout: execStdout, stderr: execStderr };
 			} else if (language === "python") {
-				const [execTime, execStdout, execStderr] = await securePyEval(code);
+				const [execTime, execStdout, execStderr] = await pythonRunner.runCode(
+					code,
+				);
 				return { times: execTime, stdout: execStdout, stderr: execStderr };
 			}
 
@@ -375,6 +378,11 @@ ${codes.join("\n")}`;
 				if (expected.startsWith('"') && expected.endsWith('"')) {
 					resolvedOutput = `"${resolvedOutput}"`;
 					isTheSame = resolvedOutput === expected;
+
+					if (!isTheSame) {
+						// Quotes turned out not to be needed, revert so the user doesn't get confused
+						resolvedOutput = resolvedOutput.slice(1, -1);
+					}
 				}
 			}
 
@@ -383,7 +391,7 @@ ${codes.join("\n")}`;
 			results.push({
 				passed: resolvedOutput === expected,
 				input: testCase.input,
-				expected: testCase.output,
+				expected: expected,
 				actual: resolvedOutput,
 				output,
 				error: stderr,

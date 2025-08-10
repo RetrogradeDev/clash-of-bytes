@@ -243,11 +243,17 @@ export function PuzzleContent({
 			</div>
 
 			{isSubmitting || isRunning ? (
-				<span className="text-gray-400 text-sm flex items-center">
-					<ClockIcon className="mr-1 size-4 animate-spin" />
-					It can take up to 2 minutes to run all test cases. Please be patient,
-					we are running this on a free server.
-				</span>
+				<div className="flex items-center space-x-3 text-gray-400 text-sm">
+					<span className="relative flex h-6 w-6">
+						<span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+						<span className="relative inline-flex rounded-full h-6 w-6 bg-purple-600"></span>
+						<ClockIcon className="absolute inset-0 m-auto size-4 text-white animate-spin" />
+					</span>
+					<span>
+						It can take up to 30 seconds to run all test cases. Please be
+						patient, we are running this on a free server.
+					</span>
+				</div>
 			) : null}
 
 			{error && (
@@ -327,7 +333,7 @@ export function PuzzleContent({
 
 								<p className="mt-4 text-sm text-gray-400">Program Output:</p>
 								<div className="mt-2 text-sm text-gray-300 p-2 bg-gray-900/60 rounded border border-gray-600">
-									{result.error && (
+									{result.error && result.error.trim() !== "" && (
 										<div className="my-2 text-sm text-red-200 font-semibold">
 											Error: {result.error}
 										</div>

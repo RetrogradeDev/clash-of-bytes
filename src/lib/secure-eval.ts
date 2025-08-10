@@ -1,117 +1,121 @@
-import { spawn } from "child_process";
+import { type ChildProcessWithoutNullStreams, spawn } from "child_process";
 
-export function secureJsEval(
-	code: string,
-): Promise<[number[], string, string]> {
-	return new Promise<[number[], string, string]>((resolve, reject) => {
-		const docker = spawn(
-			"docker",
-			[
-				"run",
-				"--rm",
-				"--memory=128m",
-				"--cpus=0.1",
-				"--network=none",
-				"--pids-limit=10",
-				"--read-only",
-				"-i",
-				"my-javascript-runner",
-			],
-			{
-				stdio: ["pipe", "pipe", "pipe"],
-			},
-		);
+class CodeRunner {
+	imageId: string;
+	processPool: ChildProcessWithoutNullStreams[] = [];
+	desiredPoolSize: number;
 
-		docker.stdin.write(code);
-		docker.stdin.end();
+	constructor(imageId: string, desiredPoolSize: number = 3) {
+		this.imageId = imageId;
+		this.desiredPoolSize = desiredPoolSize;
 
-		let stdout = "";
-		let stderr = "";
+		this.fillPool();
+	}
 
-		docker.stdout.on("data", (data) => {
-			stdout += data.toString();
-		});
-		docker.stderr.on("data", (data) => {
-			stderr += data.toString();
-		});
-
-		docker.on("close", (code) => {
-			const allData = stdout.split("\n");
-			console.log("All data received:", allData);
-			const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
-
-			console.log("All data:", allData);
-			console.log("Time lines:", timeLines);
-			console.log("Code exit:", code);
-			console.log("Stdout:", stdout);
-			console.log("Stderr:", stderr);
-
-			const timesMs = timeLines.map((line) =>
-				parseFloat(line.replace("_TIME$", "").trim()),
+	fillPool() {
+		while (this.processPool.length < this.desiredPoolSize) {
+			const process = spawn(
+				"docker",
+				[
+					"run",
+					"--rm",
+					"--memory=128m",
+					"--cpus=0.1",
+					"--network=none",
+					"--pids-limit=10",
+					"--read-only",
+					"-i",
+					this.imageId,
+				],
+				{
+					stdio: ["pipe", "pipe", "pipe"],
+				},
 			);
-			stdout = allData.filter((line) => !line.startsWith("_TIME$")).join("\n");
+			this.processPool.push(process);
+		}
+	}
 
-			console.log("Parsed time:", timesMs);
+	releasePool() {
+		while (this.processPool.length > 0) {
+			const process = this.processPool.pop()!;
+			process.kill();
+		}
+	}
 
-			if (code !== 0) {
-				return reject(new Error(`Docker exited with code ${code}: ${stderr}`));
+	async runCode(code: string): Promise<[number[], string, string]> {
+		let process = this.processPool.pop();
+		if (!process) {
+			console.warn(
+				"No available process in the pool, waiting for one to become available.",
+			);
+			// Wait a little and try again if no process is available
+			await new Promise((resolve) => setTimeout(resolve, 100));
+			if (this.processPool.length === 0) {
+				console.warn("Process pool is empty, filling it up.");
+				this.fillPool(); // Fill the pool if it's empty
 			}
 
-			resolve([timesMs, stdout.trim(), stderr.trim()]);
-		});
-	});
-}
+			process = this.processPool.pop();
+			if (!process) {
+				throw new Error("No available process to run the code.");
+			}
+		}
 
-export function securePyEval(
-	code: string,
-): Promise<[number[], string, string]> {
-	return new Promise<[number[], string, string]>((resolve, reject) => {
-		const docker = spawn(
-			"docker",
-			[
-				"run",
-				"--rm",
-				"--memory=64m",
-				"--cpus=0.1",
-				"--network=none",
-				"--pids-limit=10",
-				"--read-only",
-				"-i",
-				"my-python-runner",
-			],
-			{
-				stdio: ["pipe", "pipe", "pipe"],
-			},
+		this.fillPool(); // Ensure pool is filled after taking one out
+
+		console.log(
+			`Running code in process ${process.pid} from pool of size ${
+				this.processPool.length + 1
+			}`,
 		);
 
-		docker.stdin.write(code);
-		docker.stdin.end();
+		return new Promise<[number[], string, string]>((resolve, reject) => {
+			process.stdin.write(code);
+			process.stdin.end();
 
-		let stdout = "";
-		let stderr = "";
+			let stdout = "";
+			let stderr = "";
+			process.stdout.on("data", (data) => {
+				stdout += data.toString();
+			});
+			process.stderr.on("data", (data) => {
+				stderr += data.toString();
+			});
+			process.on("close", (code) => {
+				const allData = stdout.split("\n");
+				const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
+				const times = timeLines.map((line) =>
+					parseFloat(line.replace("_TIME$", "").trim()),
+				);
+				stdout = allData
+					.filter((line) => !line.startsWith("_TIME$"))
+					.join("\n");
 
-		docker.stdout.on("data", (data) => {
-			stdout += data.toString();
+				if (code !== 0) {
+					return reject(
+						new Error(`Docker exited with code ${code}: ${stderr}`),
+					);
+				}
+
+				resolve([times, stdout, stderr]);
+			});
 		});
-		docker.stderr.on("data", (data) => {
-			stderr += data.toString();
-		});
-
-		docker.on("close", (code) => {
-			const allData = stdout.split("\n");
-			const timeLines = allData.filter((line) => line.startsWith("_TIME$"));
-
-			const timesMs =
-				timeLines.length > 0
-					? timeLines.map((line) => parseFloat(line.slice(6, -1)))
-					: [9999];
-			stdout = allData.filter((line) => !line.startsWith("_TIME$")).join("\n");
-
-			if (code !== 0) {
-				return reject(new Error(`Docker exited with code ${code}: ${stderr}`));
-			}
-
-			resolve([timesMs, stdout.trim(), stderr.trim()]);
-		});
-	});
+	}
 }
+
+let pythonRunner: CodeRunner;
+let javascriptRunner: CodeRunner;
+
+if (!(globalThis as any).__pythonRunner) {
+	(globalThis as any).__pythonRunner = new CodeRunner("my-python-runner");
+}
+if (!(globalThis as any).__javascriptRunner) {
+	(globalThis as any).__javascriptRunner = new CodeRunner(
+		"my-javascript-runner",
+	);
+}
+
+pythonRunner = (globalThis as any).__pythonRunner;
+javascriptRunner = (globalThis as any).__javascriptRunner;
+
+export { pythonRunner, javascriptRunner };

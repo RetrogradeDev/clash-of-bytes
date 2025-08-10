@@ -22,7 +22,7 @@
 - [x] build script
 - [x] use username plugin instead of name field
 - [x] add proper confirm and error dialogs on the settings page
-- [ ] update code runner: run all tests at once, warmpup
+- [x] update code runner: run all tests at once, warmup
 - [x] properly use RHF for our forms
   - [x] login
   - [x] signup
