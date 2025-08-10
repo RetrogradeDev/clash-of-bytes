@@ -141,7 +141,7 @@ async function calculateScore(
 	code: string,
 	language: string,
 	benchruns: number = 1,
-): Promise<[number[], string[], string]> {
+): Promise<[number[], string[], string[]]> {
 	// For runtime mode, we need to measure the execution time
 	let stdout: string = "";
 	let stderr: string = "";
@@ -192,7 +192,7 @@ async function calculateScore(
 	);
 
 	// Extract all stdout between _START_STDOUT$ and _END_STDOUT$ and return as an array
-	const outputs: string[] = [];
+	const stdout_final: string[] = [];
 	let searchStart = 0;
 	while (true) {
 		const startIndex = stdout.indexOf("_START_STDOUT$", searchStart);
@@ -202,14 +202,45 @@ async function calculateScore(
 				startIndex + "_START_STDOUT$".length,
 				endIndex,
 			);
-			outputs.push(output);
+			stdout_final.push(output);
 			searchStart = endIndex + "_END_STDOUT$".length;
 		} else {
 			break;
 		}
 	}
 
-	return [totalTime, outputs, stderr];
+	// Extract all stderr between _START_STDERR$ and _END_STDERR$ and return as an array
+	let stderr_final: string[] = [];
+	searchStart = 0;
+	while (true) {
+		const startIndex = stderr.indexOf("_START_STDERR$", searchStart);
+		const endIndex = stderr.indexOf("_END_STDERR$", startIndex + 1);
+		if (startIndex !== -1 && endIndex !== -1) {
+			const output = stderr.substring(
+				startIndex + "_START_STDERR$".length,
+				endIndex,
+			);
+			stderr_final.push(output);
+			searchStart = endIndex + "_END_STDERR$".length;
+		} else {
+			break;
+		}
+	}
+
+	console.log(stdout_final, stderr_final);
+
+	if (
+		stderr_final.length === 0 ||
+		(stderr_final.length === 1 && stderr_final[0] === "")
+	) {
+		stderr_final = Array(15).fill(
+			stderr.replaceAll("_START_STDERR$", "").replaceAll("_END_STDERR$", ""),
+		);
+	}
+
+	console.log(stdout_final, stderr_final);
+
+	return [totalTime, stdout_final, stderr_final];
 }
 
 export async function runTestCases(data: {
@@ -246,12 +277,19 @@ export async function runTestCases(data: {
 		const codes = [];
 
 		for (const testCase of testCases) {
+			const nativeLog =
+				data.language === "javascript" ? "console.log" : "print";
+			const nativeStderr =
+				data.language === "javascript" ? "console.error" : "sys.stderr.write";
+			const nativeStringify =
+				data.language === "javascript" ? "JSON.stringify" : "str";
 			codes.push(`
-${data.language === "javascript" ? "console.log" : "print"}("_START_STDOUT$")
-${data.language === "javascript" ? "console.log" : "print"}("_OUTPUT$"+${
-				data.language === "javascript" ? "JSON.stringify(" : "str("
-			}solve(${testCase.input})))
-${data.language === "javascript" ? "console.log" : "print"}("_END_STDOUT$")
+${nativeLog}("\\n_START_STDOUT$")
+${nativeStderr}("\\n_START_STDERR$")
+${nativeLog}("_OUTPUT$"+${nativeStringify}(solve(${testCase.input})))
+${nativeStderr}("_END_STDERR$")
+${nativeLog}("_END_STDOUT$")
+
 solve(${testCase.input})
 
 ${
@@ -262,9 +300,8 @@ ${
 solve(${testCase.input})
 solve(${testCase.input})
 solve(${testCase.input})
-${data.language === "javascript" ? "console.log" : "print"}("_TIME$" + ${
-				data.language === "python" ? "str" : ""
-			}(${
+
+${nativeLog}("_TIME$" + ${data.language === "python" ? "str" : ""}(${
 				data.language === "javascript"
 					? "Number(process.hrtime.bigint()"
 					: "(time.time_ns()"
@@ -274,19 +311,27 @@ ${data.language === "javascript" ? "console.log" : "print"}("_TIME$" + ${
 		const finalCode = `
 ${
 	data.language === "python"
-		? `import time
+		? `import time, sys
 false = False
 true = True`
 		: "let startTime;"
 }
 
-${data.code}
+${
+	data.language === "javascript"
+		? "function solve(input) {try {\n" +
+		  data.code +
+		  "\nreturn solve(input);\n} catch (e) {console.error(e);}}"
+		: "def solve(input):\n\ttry:\n\t\t" +
+		  data.code.replace(/\n/g, "\n\t\t") +
+		  "\n\t\treturn solve(input)\n\texcept Exception as e:\n\t\tsys.stderr.write(str(e))"
+}
 
 ${codes.join("\n")}`;
 
 		console.log("Final code for test case:", finalCode);
 
-		const [times, stdouts, stderr] = await calculateScore(
+		const [times, stdouts, stderrs] = await calculateScore(
 			finalCode,
 			data.language,
 			data.bench ? 3 : 1, // Run multiple times if benchmarking
@@ -297,6 +342,7 @@ ${codes.join("\n")}`;
 		for (let i = 0; i < testCases.length; i++) {
 			const testCase = testCases[i];
 			const stdout = stdouts[i] || "";
+			const stderr = stderrs[i] || null;
 			const time = times[i] || 9999; // Default to 9999ms
 
 			let resolvedOutput =
@@ -340,7 +386,7 @@ ${codes.join("\n")}`;
 				expected: testCase.output,
 				actual: resolvedOutput,
 				output,
-				error: stderr || null,
+				error: stderr,
 				time: Math.round(time * 10000) / 10000, // Round to 0.0001ms
 			});
 		}
