@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
+import { Avatar } from "@/components/avatar";
 
 export async function generateMetadata({
 	params,
@@ -26,6 +27,7 @@ export async function generateMetadata({
 async function getUserData(username: string): Promise<{
 	username: string;
 	name: string;
+	image?: string | null;
 	createdAt: Date;
 	puzzles: {
 		id: string;
@@ -58,6 +60,7 @@ async function getUserData(username: string): Promise<{
 			name: true,
 			username: true,
 			createdAt: true,
+			image: true,
 			puzzles: {
 				select: {
 					id: true,
@@ -113,11 +116,11 @@ export default async function ProfilePage({
 				<div className="space-y-8">
 					<div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 rounded-xl p-8 border border-purple-500/20">
 						<div className="flex items-center space-x-6">
-							<div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-								<span className="text-2xl font-bold text-white">
-									{user.name.charAt(0).toUpperCase()}
-								</span>
-							</div>
+							<Avatar
+								name={user.name}
+								size={20}
+								image={user.image || undefined}
+							/>
 							<div>
 								<h1 className="text-4xl font-bold text-white mb-2">
 									{user.name}

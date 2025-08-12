@@ -16,9 +16,11 @@
 - [ ] settings
   - [x] account
   - [x] linked accounts
+  - [ ] change password
+  - [ ] delete account
   - [ ] polish UI/UX
 - [x] make navbar 100% css
-- [ ] avatars
+- [x] avatars
 - [x] build script
 - [x] use username plugin instead of name field
 - [x] add proper confirm and error dialogs on the settings page

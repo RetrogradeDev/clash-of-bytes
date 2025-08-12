@@ -5,13 +5,16 @@ import { useSession, signOut } from "@/lib/auth-client";
 import { useState } from "react";
 import Image from "next/image";
 import { LogOutIcon, SettingsIcon, User2Icon } from "lucide-react";
+import { Avatar } from "./avatar";
 
 const ProfileDropdown = ({
 	name,
 	userName,
+	image,
 }: {
 	name: string;
 	userName: string;
+	image?: string;
 }) => {
 	return (
 		<div className="relative group">
@@ -20,11 +23,7 @@ const ProfileDropdown = ({
 				tabIndex={0}
 				aria-haspopup="true"
 			>
-				<span className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
-					<span className="text-white font-bold">
-						{name.charAt(0).toUpperCase()}
-					</span>
-				</span>
+				<Avatar name={name} size={8} image={image} />
 				<span className="text-sm text-gray-400">{name}</span>
 			</div>
 			<div className="hidden group-hover:block group-focus-within:block absolute top-16 right-0 w-48 bg-[#212121] rounded-none rounded-bl-lg shadow-xl border-l border-b border-gray-600 z-50">
@@ -155,6 +154,7 @@ export function Navbar() {
 							<ProfileDropdown
 								name={session.user.name}
 								userName={session.user.username!}
+								image={session.user.image || undefined} // JS is goofy
 							/>
 						) : (
 							<div className="flex items-center space-x-2">
